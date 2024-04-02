@@ -1,3 +1,9 @@
+    /* Trabalho de Compiladores:
+        Integrantes:
+         - Eduardo Dalmás Faé (00334087)
+         - João Pedro Kuhn Braun (00325265)
+    */
+
 %{
     #include "tokens.h"
 %}
@@ -43,7 +49,7 @@
 
 
     /* Caracteres Especiais */
-[-!*/%+-<>{}()=,;] { return *yytext; }
+[-!*/%+<>{}()=,;] { return *yytext; }
 
     /* Identificadores */
 [a-z_][a-z0-9_]* { return TK_IDENTIFICADOR; }
