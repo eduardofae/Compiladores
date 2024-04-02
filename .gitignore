@@ -1,0 +1,4 @@
+obj
+*.tgz
+lex.yy.c
+test
