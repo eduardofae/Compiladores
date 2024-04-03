@@ -5,7 +5,7 @@
     */
 
 %{
-    #include "tokens.h"
+    #include "parser.tab.h"
 %}
 
     /* Opções do Flex */
