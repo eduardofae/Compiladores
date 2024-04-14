@@ -1,0 +1,41 @@
+int g1; g2; g3,
+float g4; g5,
+bool g6,
+
+() | int / foo1 {
+  int v1; v2; v3,
+  float v4; v5,
+  bool v6; v7,
+}
+
+(int x) | float / foo2 {
+  int v1; v2; v3,
+  float v4; v5,
+  bool v6; v7,
+  v1 = 5,
+  v2 = 4.5,
+  v3 = !!!!!!!true,
+  v4 = g4,
+  v5 = foo500(),
+  foo1(),
+  foo600(v1; v2 * v3; 5 + 1 ----4),
+  return x,
+  return (x *(9 + 5/(2---2)*9)|(2+9)),
+  if (true) {
+    
+  } else {
+
+  },
+  if (false) {
+
+  },
+  while (true) {
+
+  },
+  
+}
+
+(float x; bool y) | bool / foo3 {
+  
+}
+

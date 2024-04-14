@@ -12,6 +12,12 @@ int yylex(void);
 void yyerror (char const *mensagem);
 %}
 
+/* Tornando o retorno a respeito do erro mais legível */
+%{
+    extern int yylineno;
+%}
+%define parse.error verbose
+
 %token TK_PR_INT
 %token TK_PR_FLOAT
 %token TK_PR_BOOL
@@ -73,7 +79,7 @@ lst_commands : lst_commands command ',' | command ',';
 command : local_var | atrib | control_flux | return | command_block | func_call;
 
 /* Declaração e atribuição de Variáveis */
-local_var : global_var;
+local_var : type lst_ids;
 atrib : TK_IDENTIFICADOR '=' expression;
 
 /* Chamadas de função */
@@ -132,5 +138,5 @@ literal : TK_LIT_FALSE | TK_LIT_FLOAT | TK_LIT_INT | TK_LIT_TRUE;
 %%
 
 void yyerror (char const *mensagem) {
-    printf("%s", mensagem);
+    printf("Problema encontrado: %s na linha %d\n", mensagem, yylineno);
 }
