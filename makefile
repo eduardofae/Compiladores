@@ -1,5 +1,6 @@
-FILENAME=etapa1
+FILENAME=etapa2
 SCANNER=lex.yy.c
+PARSER=parser.tab.c parser.tab.h parser.output
 
 IDIR=include
 CC=gcc
@@ -7,11 +8,11 @@ CFLAGS=-I$(IDIR)
 
 ODIR=obj
 
-LIBS=-lm
+LIBS=
 
-DEPS = $(SCANNER)
+DEPS = $(PARSER) $(SCANNER)
 
-_OBJ = main.o lex.yy.o
+_OBJ = main.o lex.yy.o parser.tab.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS)
@@ -20,11 +21,11 @@ $(ODIR)/%.o: %.c $(DEPS)
 
 all: $(FILENAME)
 
-run: all
-	./$(FILENAME)
-
-$(SCANNER): scanner.l
+$(SCANNER): $(PARSER) scanner.l
 	flex scanner.l
+
+$(PARSER): parser.y
+	bison -d parser.y
 
 $(FILENAME): $(OBJ) 
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)	
@@ -38,4 +39,5 @@ clean:
 	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~
 	rm -f $(FILENAME).tgz
 	rm -f $(FILENAME)
-	rm -f lex.yy.c
+	rm -f $(PARSER)
+	rm -f $(SCANNER)

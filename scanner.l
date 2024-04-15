@@ -5,7 +5,7 @@
     */
 
 %{
-    #include "tokens.h"
+    #include "parser.tab.h"
 %}
 
     /* Opções do Flex */
@@ -56,7 +56,8 @@
 
     /* Quebra de Linha e Espaços */
 "\n" {}
-" " {}
+" "  {}
+"\t" {}
 
     /* Erro */
 . { return TK_ERRO; }
