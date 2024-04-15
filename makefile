@@ -1,6 +1,6 @@
 FILENAME=etapa2
 SCANNER=lex.yy.c
-PARSER=parser.tab.c parser.tab.h
+PARSER=parser.tab.c parser.tab.h parser.output
 
 IDIR=include
 CC=gcc

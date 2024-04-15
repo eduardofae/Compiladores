@@ -1,4 +1,5 @@
 obj
-*.tgz
+etapa*
+parser.tab*
 lex.yy.c
 test
