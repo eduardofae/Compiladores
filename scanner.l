@@ -56,7 +56,8 @@
 
     /* Quebra de Linha e Espaços */
 "\n" {}
-" " {}
+" "  {}
+"\t" {}
 
     /* Erro */
 . { return TK_ERRO; }
