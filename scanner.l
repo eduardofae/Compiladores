@@ -35,10 +35,10 @@
 "|"  { return TK_OC_OR;  }
 
     /* Palavras Literais */
-"true"          { return TK_LIT_TRUE;  }
-"false"         { return TK_LIT_FALSE; }
-[0-9]+          { return TK_LIT_INT;   }
-[0-9]*\.[0-9]+  { return TK_LIT_FLOAT; }
+"true"          { yyval.valor_lexico = { yylineno, LIT, strdup(yytext) }; return TK_LIT_TRUE;  }
+"false"         { yyval.valor_lexico = { yylineno, LIT, strdup(yytext) }; return TK_LIT_FALSE; }
+[0-9]+          { yyval.valor_lexico = { yylineno, LIT, strdup(yytext) }; return TK_LIT_INT;   }
+[0-9]*\.[0-9]+  { yyval.valor_lexico = { yylineno, LIT, strdup(yytext) }; return TK_LIT_FLOAT; }
 
     /* Comentários */
 "//".* {}
@@ -52,7 +52,7 @@
 [-!*/%+<>{}()=,;] { return *yytext; }
 
     /* Identificadores */
-[a-z_][a-z0-9_]* { return TK_IDENTIFICADOR; }
+[a-z_][a-z0-9_]* { yyval.valor_lexico = { yylineno, ID, strdup(yytext) }; return TK_IDENTIFICADOR; }
 
     /* Quebra de Linha e Espaços */
 "\n" {}

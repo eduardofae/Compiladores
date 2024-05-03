@@ -4,12 +4,11 @@
          - João Pedro Kuhn Braun (00325265)
     */
 
-
 %{
-#include <stdio.h>
-#include <stdlib.h>
-int yylex(void);
-void yyerror (char const *mensagem);
+    #include <stdio.h>
+    #include <stdlib.h>
+    int yylex (void);
+    void yyerror (char const *mensagem);
 %}
 
 /* Tornando o retorno a respeito do erro mais legível */
@@ -18,10 +17,21 @@ void yyerror (char const *mensagem);
 %}
 %define parse.error verbose
 
-%union {
-char* valor_lexico;
-int inteiro;
-node* no;
+%{
+    #define ID  0
+    #define LIT 1
+
+    struct val {
+        int   line;
+        int   type;
+        char* token;
+    }
+%}
+
+%
+
+%union yyval {
+    struct val valor_lexico;
 }
 
 %token TK_PR_INT
@@ -37,17 +47,17 @@ node* no;
 %token TK_OC_NE
 %token TK_OC_AND
 %token TK_OC_OR
-%token TK_IDENTIFICADOR
-%token TK_LIT_INT
-%token TK_LIT_FLOAT
-%token TK_LIT_FALSE
-%token TK_LIT_TRUE
+%token <valor_lexico> TK_IDENTIFICADOR
+%token <valor_lexico> TK_LIT_INT
+%token <valor_lexico> TK_LIT_FLOAT
+%token <valor_lexico> TK_LIT_FALSE
+%token <valor_lexico> TK_LIT_TRUE
 %token TK_ERRO
 
 %%
 
 /* Definição de um programa */
-program : lst_elements 
+program : lst_elements {  }
         | ;
 lst_elements : lst_elements element 
              | element;
@@ -105,7 +115,8 @@ atrib : TK_IDENTIFICADOR '=' expression;
 
 /* Chamadas de função */
 func_call : TK_IDENTIFICADOR '(' func_args ')';
-func_args : lst_args | ;
+func_args : lst_args 
+          | ;
 lst_args : lst_args ';' expression 
          | expression;
 
@@ -184,4 +195,12 @@ literal : TK_LIT_FALSE
 
 void yyerror (char const *mensagem) {
     printf("Problema encontrado: %s na linha %d\n", mensagem, yylineno);
+}
+
+node* create_node() {
+
+}
+
+node* create_leaf() {
+
 }
