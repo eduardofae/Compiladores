@@ -96,7 +96,9 @@ lst_elements : lst_elements element { if ($2 == NULL) {
                                       }
                                       else {
                                         $$ = $2;
-                                        asd_add_father($2, $1);
+                                        if ($1 != NULL) {
+                                          asd_add_father($2, $1);
+                                        }
                                       }
                                         }
              | element { $$ = $1; };
@@ -138,7 +140,9 @@ lst_commands : lst_commands command ',' { if ($2 == NULL) {
                                         }
                                         else {
                                           $$ = $2;
-                                          asd_add_father($2, $1);
+                                          if ($1 != NULL) {
+                                            asd_add_father($2, $1);
+                                          }
                                         } 
                                         }
              | command ',' { $$ = $1; };

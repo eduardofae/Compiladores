@@ -24,11 +24,14 @@ float i,
   return x,
   return (x *(9 + 5/(2---2)*9)|(2+9)),
   if (true) {
+    int x,
     var0 = 0,
     v3 = 3,
+    float cebola; vinicius,
     v4 = 4,
     v5 = 5,
   } else {
+    bool edf; jpkb,
     var = 1,
     while (false) {
       var = -5,
@@ -36,7 +39,7 @@ float i,
     var10 = 10,
   },
   if (false) {
-
+    bool edfae,
   },
   while (true) {
     var2 = 2,
