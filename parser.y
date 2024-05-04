@@ -89,154 +89,153 @@
 %%
 
 /* Definição de um programa */
-program : lst_elements { $$ = get_root($1); arvore = $$; printf("program\n"); }
-        |  { $$ = NULL; arvore = $$; printf("program\n"); } ;
+program : lst_elements { $$ = get_root($1); arvore = $$; }
+        |  { $$ = NULL; arvore = $$; } ;
 lst_elements : lst_elements element { if ($2 == NULL) {
                                         $$ = $1;
                                       }
                                       else {
                                         $$ = $2;
-                                        asd_add_father($2, $1);  printf("lst_elements\n");
+                                        asd_add_father($2, $1);
                                       }
                                         }
-             | element { $$ = $1; printf("lst_elements\n"); };
-element : global_var { $$ = $1; printf("element\n"); }
-        | func       { $$ = $1; printf("element\n"); };
+             | element { $$ = $1; };
+element : global_var { $$ = $1; }
+        | func       { $$ = $1; };
 
 /* Definição de um tipo, que será usado em definições da gramática */
-type : TK_PR_BOOL  { $$ = NULL; printf("type\n"); }
-     | TK_PR_INT   { $$ = NULL; printf("type\n"); }
-     | TK_PR_FLOAT { $$ = NULL; printf("type\n"); };
+type : TK_PR_BOOL  { $$ = NULL; }
+     | TK_PR_INT   { $$ = NULL; }
+     | TK_PR_FLOAT { $$ = NULL; };
 
 /* Definição de uma variável global (Item 3.1) */
-global_var : type lst_ids ',' { $$ = $2; printf("global_var\n"); };
-lst_ids : lst_ids ';' TK_IDENTIFICADOR { $$ = $1; printf("lst_ids\n"); }
-        | TK_IDENTIFICADOR { $$ = NULL; printf("lst_ids\n"); };
+global_var : type lst_ids ',' { $$ = $2; };
+lst_ids : lst_ids ';' TK_IDENTIFICADOR { $$ = $1; }
+        | TK_IDENTIFICADOR { $$ = NULL; };
 
 
 /* INÍCIO DEFINIÇÃO DE FUNÇÃO (Item 3.2) */
 /* Definção geral */
-func : header body { $$ = $1; asd_add_child($$, $2); printf("func\n"); };
+func : header body { $$ = $1; asd_add_child($$, $2); };
 
 /* Definção do Cabeçalho */
-header : '(' lst_parameters ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = asd_new($7.token); printf("header\n"); }
-       | '(' ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = asd_new($6.token); printf("header\n"); };
-lst_parameters : lst_parameters ';' parameter { $$ = $1; printf("lst_parameters\n"); }
-               | parameter { $$ = $1; printf("lst_parameters\n"); };
-parameter : type TK_IDENTIFICADOR { $$ = $1; printf("parameter\n"); };
+header : '(' lst_parameters ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = asd_new($7.token); }
+       | '(' ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = asd_new($6.token); };
+lst_parameters : lst_parameters ';' parameter { $$ = $1; }
+               | parameter { $$ = $1; };
+parameter : type TK_IDENTIFICADOR { $$ = $1; };
 
 /* Definição do Corpo */
-body : command_block { $$ = $1; printf("body\n"); };
+body : command_block { $$ = $1; };
 /* FIM DEFINIÇÃO DE FUNÇÃO */
 
 
 /* Definição de um bloco de comando (Item 3.3) */
-command_block : '{' lst_commands '}' { $$ = get_root($2); printf("command_block\n"); }
-              | '{' '}' { $$ = NULL; printf("command_block\n"); };
+command_block : '{' lst_commands '}' { $$ = get_root($2); }
+              | '{' '}' { $$ = NULL; };
 lst_commands : lst_commands command ',' { if ($2 == NULL) {
                                           $$ = $1;
-                                          printf("Erro, sai daqui caraaa!");
                                         }
                                         else {
                                           $$ = $2;
                                           asd_add_father($2, $1);
-                                          printf("%p %p %p\n", $$, $1, $2);
-                                        } printf("lst_commands tudo\n"); }
-             | command ',' { $$ = $1; printf("%p\n", $1); printf("lst_commands somente comando\n"); };
+                                        } 
+                                        }
+             | command ',' { $$ = $1; };
 
 
 /* INÍCIO DEFINIÇÃO DE UM COMANDO (Item 3.4) */
 /* Comando Geral */
-command : local_var             { $$ = $1; printf("command\n"); }
-        | atrib                 { $$ = $1; printf("command\n"); }
-        | control_flux          { $$ = $1; printf("command\n"); }
-        | return                { $$ = $1; printf("command\n"); }
-        | command_block         { $$ = $1; printf("command\n"); }
-        | func_call             { $$ = $1; printf("command\n"); };
+command : local_var             { $$ = $1; }
+        | atrib                 { $$ = $1; }
+        | control_flux          { $$ = $1; }
+        | return                { $$ = $1; }
+        | command_block         { $$ = $1; }
+        | func_call             { $$ = $1; };
 
 /* Declaração e atribuição de Variáveis */
-local_var : type lst_ids { $$ = $2; printf("local_var\n"); };
-atrib : TK_IDENTIFICADOR '=' expression { $$ = asd_new("="); asd_tree_t *n = asd_new($1.token); asd_add_child($$, n); asd_add_child($$, $3); printf("atrib\n"); };
+local_var : type lst_ids { $$ = $2; };
+atrib : TK_IDENTIFICADOR '=' expression { $$ = asd_new("="); asd_tree_t *n = asd_new($1.token); asd_add_child($$, n); asd_add_child($$, $3); };
 
 /* Chamadas de função */
-func_call : TK_IDENTIFICADOR '(' lst_args ')' { char str[6] = "call "; strcat(str, $1.token); $$ = asd_new(str); asd_add_child($$, $3); printf("func_call\n"); }
-          | TK_IDENTIFICADOR '(' ')' { char str[6] = "call "; strcat(str, $1.token); $$ = asd_new(str); printf("func_call\n"); };
-lst_args : lst_args ';' expression { $$ = $1; asd_add_child($$, $3); printf("lst_args\n"); }
-         | expression { $$ = $1;  printf("lst_args\n");};
+func_call : TK_IDENTIFICADOR '(' lst_args ')' { char str[6] = "call "; strcat(str, $1.token); $$ = asd_new(str); asd_add_child($$, get_root($3)); }
+          | TK_IDENTIFICADOR '(' ')' { char str[6] = "call "; strcat(str, $1.token); $$ = asd_new(str); };
+lst_args : lst_args ';' expression { $$ = $3; asd_add_father($3, $1); }
+         | expression { $$ = $1; };
 
 /* Comando de Retorno */
-return : TK_PR_RETURN expression { $$ = asd_new("return"); asd_add_child($$, $2);  printf("return\n");};
+return : TK_PR_RETURN expression { $$ = asd_new("return"); asd_add_child($$, $2); };
 
 /* Comandos de Controle de Fluxo */
-control_flux : conditional { $$ = $1;  printf("control_flux\n");}
-             | iteractive  { $$ = $1;  printf("control_flux\n");};
+control_flux : conditional { $$ = $1; }
+             | iteractive  { $$ = $1; };
 conditional : TK_PR_IF '(' expression ')' command_block TK_PR_ELSE command_block { $$ = asd_new("if");
                                                                                    asd_add_child($$, $3);
                                                                                    asd_add_child($$, $5); 
-                                                                                   asd_add_child($$, $7);  printf("conditional\n");}
+                                                                                   asd_add_child($$, $7); }
              | TK_PR_IF '(' expression ')' command_block { $$ = asd_new("if");
                                                            asd_add_child($$, $3);
-                                                           asd_add_child($$, $5);  printf("conditional\n");}
+                                                           asd_add_child($$, $5); }
 
-iteractive : TK_PR_WHILE '(' expression ')' command_block { $$ = asd_new("while"); asd_add_child($$, $3); asd_add_child($$, $5);  printf("iteractive\n");};
+iteractive : TK_PR_WHILE '(' expression ')' command_block { $$ = asd_new("while"); asd_add_child($$, $3); asd_add_child($$, $5); };
 /* FIM DEFINIÇÃO DE UM COMANDO (Item 3.4) */
 
 
 /* INÍCIO DEFINIÇÃO DE DEFINIÇÃO DE EXPRESSÕES (Item 3.5) */
 /* Definição Geral */
-expression : or_exp { $$ = $1;  printf("expression\n");};
+expression : or_exp { $$ = $1; };
 
 /* Expressões OR e AND */
-or_exp : or_exp TK_OC_OR and_exp { $$ = asd_new("|"); asd_add_child($$, $1); asd_add_child($$, $3);  printf("or_exp\n");}
-       | and_exp { $$ = $1;  printf("or_exp\n");};
-and_exp : and_exp TK_OC_AND eq_exp { $$ = asd_new("&"); asd_add_child($$, $1); asd_add_child($$, $3);  printf("and_exp\n");}
-        | eq_exp { $$ = $1;  printf("and_exp\n");};
+or_exp : or_exp TK_OC_OR and_exp { $$ = asd_new("|"); asd_add_child($$, $1); asd_add_child($$, $3); }
+       | and_exp { $$ = $1; };
+and_exp : and_exp TK_OC_AND eq_exp { $$ = asd_new("&"); asd_add_child($$, $1); asd_add_child($$, $3); }
+        | eq_exp { $$ = $1; };
 
 /* Expressão de igualdade */
-eq_exp : eq_exp equality ineq_exp { $$ = $2; asd_add_child($$, $1); asd_add_child($$, $3);  printf("eq_exp\n");}
-       | ineq_exp { $$ = $1;  printf("eq_exp\n");};
-equality : TK_OC_EQ { $$ = asd_new("==");  printf("equality\n");}
-         | TK_OC_NE { $$ = asd_new("!=");  printf("equality\n");};
+eq_exp : eq_exp equality ineq_exp { $$ = $2; asd_add_child($$, $1); asd_add_child($$, $3); }
+       | ineq_exp { $$ = $1; };
+equality : TK_OC_EQ { $$ = asd_new("=="); }
+         | TK_OC_NE { $$ = asd_new("!="); };
 
 /* Expressão de desigualdade */
-ineq_exp : ineq_exp inequality sum_exp { $$ = $2; asd_add_child($$, $1); asd_add_child($$, $3);  printf("ineq_exp\n");}
-         | sum_exp { $$ = $1;  printf("ineq_exp\n");};
-inequality : TK_OC_GE { $$ = asd_new(">=");  printf("inequality\n");}
-           | TK_OC_LE { $$ = asd_new("<=");  printf("inequality\n");}
-           | '<' { $$ = asd_new("<");  printf("inequality\n");}
-           | '>' { $$ = asd_new(">");  printf("inequality\n");};
+ineq_exp : ineq_exp inequality sum_exp { $$ = $2; asd_add_child($$, $1); asd_add_child($$, $3); }
+         | sum_exp { $$ = $1; };
+inequality : TK_OC_GE { $$ = asd_new(">="); }
+           | TK_OC_LE { $$ = asd_new("<="); }
+           | '<' { $$ = asd_new("<"); }
+           | '>' { $$ = asd_new(">"); };
 
 /* Expressões de soma e subtração */
-sum_exp : sum_exp sum prod_exp { $$ = $2; asd_add_child($$, $1); asd_add_child($$, $3);  printf("sum_exp\n");}
-        | prod_exp { $$ = $1;  printf("sum_exp\n");};
-sum : '+' { $$ = asd_new("+");  printf("sum\n");}
-    | '-' { $$ = asd_new("-");  printf("sum\n");};
+sum_exp : sum_exp sum prod_exp { $$ = $2; asd_add_child($$, $1); asd_add_child($$, $3); }
+        | prod_exp { $$ = $1; };
+sum : '+' { $$ = asd_new("+"); }
+    | '-' { $$ = asd_new("-"); };
 
 /* Expressões de produto e divisão */
-prod_exp : prod_exp prod unary_exp { $$ = $2; asd_add_child($$, $1); asd_add_child($$, $3);  printf("prod_exp\n");}
-         | unary_exp { $$ = $1;  printf("prod_exp\n");};
-prod : '*' { $$ = asd_new("*");  printf("prod\n");}
-     | '/' { $$ = asd_new("/");  printf("prod\n");}
-     | '%' { $$ = asd_new("%");  printf("prod\n");};
+prod_exp : prod_exp prod unary_exp { $$ = $2; asd_add_child($$, $1); asd_add_child($$, $3); }
+         | unary_exp { $$ = $1; };
+prod : '*' { $$ = asd_new("*"); }
+     | '/' { $$ = asd_new("/"); }
+     | '%' { $$ = asd_new("%"); };
 
 /* Expressões unárias */
-unary_exp : unary unary_exp { $$ = $1; asd_add_child($$, $2);  printf("unary_exp\n");}
-          |  par_exp { $$ = $1;  printf("unary_exp\n");}; 
-unary : '-' { $$ = asd_new("-");  printf("unary\n");}
-      | '!' { $$ = asd_new("!");  printf("unary\n");};
+unary_exp : unary unary_exp { $$ = $1; asd_add_child($$, $2); }
+          |  par_exp { $$ = $1; }; 
+unary : '-' { $$ = asd_new("-"); }
+      | '!' { $$ = asd_new("!"); };
 
 /* Parênteses */
-par_exp : '(' expression ')' { $$ = $2;  printf("par_exp\n");}
-        | operand { $$ = $1;  printf("par_exp\n");};
+par_exp : '(' expression ')' { $$ = $2; }
+        | operand { $$ = $1; };
 
 /* Operandos */
-operand : TK_IDENTIFICADOR { $$ = asd_new($1.token);  printf("operand\n");}
-        | literal          { $$ = $1;  printf("operand\n");}
-        | func_call        { $$ = $1;  printf("operand\n");};
-literal : TK_LIT_FALSE  { $$ = asd_new($1.token);  printf("literal\n");}
-        | TK_LIT_FLOAT  { $$ = asd_new($1.token);  printf("literal\n");}
-        | TK_LIT_INT    { $$ = asd_new($1.token);  printf("literal\n");}
-        | TK_LIT_TRUE   { $$ = asd_new($1.token);  printf("literal\n");};
+operand : TK_IDENTIFICADOR { $$ = asd_new($1.token); }
+        | literal          { $$ = $1; }
+        | func_call        { $$ = $1; };
+literal : TK_LIT_FALSE  { $$ = asd_new($1.token); }
+        | TK_LIT_FLOAT  { $$ = asd_new($1.token); }
+        | TK_LIT_INT    { $$ = asd_new($1.token); }
+        | TK_LIT_TRUE   { $$ = asd_new($1.token); };
 /* FIM DEFINIÇÃO DE DEFINIÇÃO DE EXPRESSÕES (Item 3.5) */
 
 %%
