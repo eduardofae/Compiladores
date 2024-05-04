@@ -4,6 +4,7 @@
 typedef struct asd_tree {
   char *label;
   int number_of_children;
+  struct asd_tree *father;
   struct asd_tree **children;
 } asd_tree_t;
 
@@ -21,6 +22,10 @@ void asd_free(asd_tree_t *tree);
  * Função asd_add_child, adiciona child como filho de tree.
  */
 void asd_add_child(asd_tree_t *tree, asd_tree_t *child);
+
+void asd_add_father(asd_tree_t *tree, asd_tree_t *father);
+
+asd_tree_t *get_root(asd_tree_t *tree);
 
 /*
  * Função exporta, imprime recursivamente a árvore.

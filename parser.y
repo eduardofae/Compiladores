@@ -89,14 +89,14 @@
 %%
 
 /* Definição de um programa */
-program : lst_elements { $$ = $1; arvore = $$; printf("program\n"); }
+program : lst_elements { $$ = get_root($1); arvore = $$; printf("program\n"); }
         |  { $$ = NULL; arvore = $$; printf("program\n"); } ;
-lst_elements : lst_elements element { if ($1 == NULL) {
-                                        $$ = $2;
+lst_elements : lst_elements element { if ($2 == NULL) {
+                                        $$ = $1;
                                       }
                                       else {
-                                        $$ = $1;
-                                        asd_add_child($$, $2);  printf("lst_elements\n");
+                                        $$ = $2;
+                                        asd_add_father($2, $1);  printf("lst_elements\n");
                                       }
                                         }
              | element { $$ = $1; printf("lst_elements\n"); };
@@ -131,15 +131,15 @@ body : command_block { $$ = $1; printf("body\n"); };
 
 
 /* Definição de um bloco de comando (Item 3.3) */
-command_block : '{' lst_commands '}' { $$ = $2; printf("command_block\n"); }
+command_block : '{' lst_commands '}' { $$ = get_root($2); printf("command_block\n"); }
               | '{' '}' { $$ = NULL; printf("command_block\n"); };
-lst_commands : lst_commands command ',' { if ($1 == NULL) {
-                                          $$ = $2;
+lst_commands : lst_commands command ',' { if ($2 == NULL) {
+                                          $$ = $1;
                                           printf("Erro, sai daqui caraaa!");
                                         }
                                         else {
-                                          $$ = $1;
-                                          asd_add_child($1, $2);
+                                          $$ = $2;
+                                          asd_add_father($2, $1);
                                           printf("%p %p %p\n", $$, $1, $2);
                                         } printf("lst_commands tudo\n"); }
              | command ',' { $$ = $1; printf("%p\n", $1); printf("lst_commands somente comando\n"); };

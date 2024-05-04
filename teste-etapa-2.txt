@@ -1,13 +1,12 @@
 () | int / foo1 {
-  int v1; v2; v3,
   v1 = 1,
   float v4; v5,
   bool v6; v7,
 }
 
-int g1; g2; g3,
-float g4; g5,
-bool g6,
+int g; j,
+bool k,
+float i,
 
 (int x) | float / foo2 {
   int v1; v2; v3,
@@ -23,15 +22,23 @@ bool g6,
   return x,
   return (x *(9 + 5/(2---2)*9)|(2+9)),
   if (true) {
-    
+    var0 = 0,
+    v3 = 3,
+    v4 = 4,
+    v5 = 5,
   } else {
-
+    var = 1,
+    while (false) {
+      var = -5,
+    },
+    var10 = 10,
   },
   if (false) {
 
   },
   while (true) {
-
+    var2 = 2,
+    var3 = 80,
   },
   
 }

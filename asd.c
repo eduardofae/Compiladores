@@ -47,6 +47,36 @@ void asd_add_child(asd_tree_t *tree, asd_tree_t *child)
   }
 }
 
+void asd_add_father(asd_tree_t *tree, asd_tree_t *father)
+{
+  if (tree != NULL && father != NULL){
+    tree->father = father;
+    asd_add_child(father, tree);
+  }else{
+    if (father == NULL) {
+      printf("Erro: %s recebeu parâmetro tree = %p / %p.\n", __FUNCTION__, tree, father);
+    }
+    else {
+      
+    }
+  }
+}
+
+asd_tree_t *get_root(asd_tree_t *tree)
+{
+  if (tree != NULL)
+  {
+    if (tree->father != NULL)
+    {
+      return get_root(tree->father);
+    }
+    else
+    {
+      return tree;
+    }
+  }
+}
+
 void exporta(asd_tree_t *tree)
 {
   int i;
