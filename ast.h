@@ -1,0 +1,27 @@
+#ifndef _ARVORE_H_
+#define _ARVORE_H_
+
+typedef struct tree {
+  char *label;
+  int number_of_children;
+  struct tree *father;
+  struct tree **children;
+} ast;
+
+// Cria um novo nodo de ast
+ast *ast_new(const char *label);
+
+// Libera recursivamente a memória alocada para um nodo de ast e seus filhos
+void ast_free(ast *tree);
+
+// Adiciona um filho a um nodo ast
+void ast_add_child(ast *tree, ast *child);
+
+// Dado um nodo de uma ast, retorna o nodo ast raiz da árvore
+ast *get_root(ast *tree);
+
+// Printa formatado de acordo com os requerimentos da etapa 3 informações de um dado nodo ast
+void exporta(ast *tree);
+
+
+#endif //_ARVORE_H_

@@ -19,12 +19,12 @@
 %}
 %define parse.error verbose
 
-%code requires { #include "asd.h" 
+%code requires { #include "ast.h" 
                  #include "valor_lexico.h" }
 
 %union {
     struct val valor_lexico;
-    asd_tree_t *no;
+    ast *no;
 }
 
 %token TK_PR_INT
@@ -91,16 +91,9 @@
 /* Definição de um programa */
 program : lst_elements { $$ = get_root($1); arvore = $$; }
         |  { $$ = NULL; arvore = $$; } ;
-lst_elements : lst_elements element { if ($2 == NULL) {
-                                        $$ = $1;
-                                      }
-                                      else {
-                                        $$ = $2;
-                                        if ($1 != NULL) {
-                                          asd_add_father($2, $1);
-                                        }
-                                      }
-                                        }
+lst_elements : lst_elements element { $$ = $2;
+                                      if ($2 == NULL) $$ = $1;
+                                      else if ($1 != NULL) ast_add_child($1, $2); }
              | element { $$ = $1; };
 element : global_var { $$ = $1; }
         | func       { $$ = $1; };
@@ -118,11 +111,11 @@ lst_ids : lst_ids ';' TK_IDENTIFICADOR { $$ = $1; }
 
 /* INÍCIO DEFINIÇÃO DE FUNÇÃO (Item 3.2) */
 /* Definção geral */
-func : header body { $$ = $1; asd_add_child($$, $2); };
+func : header body { $$ = $1; ast_add_child($$, $2); };
 
 /* Definção do Cabeçalho */
-header : '(' lst_parameters ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = asd_new($7.token); }
-       | '(' ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = asd_new($6.token); };
+header : '(' lst_parameters ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = ast_new($7.token); }
+       | '(' ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = ast_new($6.token); };
 lst_parameters : lst_parameters ';' parameter { $$ = $1; }
                | parameter { $$ = $1; };
 parameter : type TK_IDENTIFICADOR { $$ = $1; };
@@ -135,16 +128,9 @@ body : command_block { $$ = $1; };
 /* Definição de um bloco de comando (Item 3.3) */
 command_block : '{' lst_commands '}' { $$ = get_root($2); }
               | '{' '}' { $$ = NULL; };
-lst_commands : lst_commands command ',' { if ($2 == NULL) {
-                                          $$ = $1;
-                                        }
-                                        else {
-                                          $$ = $2;
-                                          if ($1 != NULL) {
-                                            asd_add_father($2, $1);
-                                          }
-                                        } 
-                                        }
+lst_commands : lst_commands command ',' { $$ = $2;
+                                          if ($2 == NULL) $$ = $1;
+                                          else if ($1 != NULL) ast_add_child($1, $2); }
              | command ',' { $$ = $1; };
 
 
@@ -159,29 +145,29 @@ command : local_var             { $$ = $1; }
 
 /* Declaração e atribuição de Variáveis */
 local_var : type lst_ids { $$ = $2; };
-atrib : TK_IDENTIFICADOR '=' expression { $$ = asd_new("="); asd_tree_t *n = asd_new($1.token); asd_add_child($$, n); asd_add_child($$, $3); };
+atrib : TK_IDENTIFICADOR '=' expression { $$ = ast_new("="); ast *n = ast_new($1.token); ast_add_child($$, n); ast_add_child($$, $3); };
 
 /* Chamadas de função */
-func_call : TK_IDENTIFICADOR '(' lst_args ')' { char str[6] = "call "; strcat(str, $1.token); $$ = asd_new(str); asd_add_child($$, get_root($3)); }
-          | TK_IDENTIFICADOR '(' ')' { char str[6] = "call "; strcat(str, $1.token); $$ = asd_new(str); };
-lst_args : lst_args ';' expression { $$ = $3; asd_add_father($3, $1); }
+func_call : TK_IDENTIFICADOR '(' lst_args ')' { char str[6] = "call "; strcat(str, $1.token); $$ = ast_new(str); ast_add_child($$, get_root($3)); }
+          | TK_IDENTIFICADOR '(' ')' { char str[6] = "call "; strcat(str, $1.token); $$ = ast_new(str); };
+lst_args : lst_args ';' expression { $$ = $3; ast_add_child($1, $3); }
          | expression { $$ = $1; };
 
 /* Comando de Retorno */
-return : TK_PR_RETURN expression { $$ = asd_new("return"); asd_add_child($$, $2); };
+return : TK_PR_RETURN expression { $$ = ast_new("return"); ast_add_child($$, $2); };
 
 /* Comandos de Controle de Fluxo */
 control_flux : conditional { $$ = $1; }
              | iteractive  { $$ = $1; };
-conditional : TK_PR_IF '(' expression ')' command_block TK_PR_ELSE command_block { $$ = asd_new("if");
-                                                                                   asd_add_child($$, $3);
-                                                                                   asd_add_child($$, $5); 
-                                                                                   asd_add_child($$, $7); }
-             | TK_PR_IF '(' expression ')' command_block { $$ = asd_new("if");
-                                                           asd_add_child($$, $3);
-                                                           asd_add_child($$, $5); }
+conditional : TK_PR_IF '(' expression ')' command_block TK_PR_ELSE command_block { $$ = ast_new("if");
+                                                                                   ast_add_child($$, $3);
+                                                                                   ast_add_child($$, $5); 
+                                                                                   ast_add_child($$, $7); }
+             | TK_PR_IF '(' expression ')' command_block { $$ = ast_new("if");
+                                                           ast_add_child($$, $3);
+                                                           ast_add_child($$, $5); }
 
-iteractive : TK_PR_WHILE '(' expression ')' command_block { $$ = asd_new("while"); asd_add_child($$, $3); asd_add_child($$, $5); };
+iteractive : TK_PR_WHILE '(' expression ')' command_block { $$ = ast_new("while"); ast_add_child($$, $3); ast_add_child($$, $5); };
 /* FIM DEFINIÇÃO DE UM COMANDO (Item 3.4) */
 
 
@@ -190,56 +176,56 @@ iteractive : TK_PR_WHILE '(' expression ')' command_block { $$ = asd_new("while"
 expression : or_exp { $$ = $1; };
 
 /* Expressões OR e AND */
-or_exp : or_exp TK_OC_OR and_exp { $$ = asd_new("|"); asd_add_child($$, $1); asd_add_child($$, $3); }
+or_exp : or_exp TK_OC_OR and_exp { $$ = ast_new("|"); ast_add_child($$, $1); ast_add_child($$, $3); }
        | and_exp { $$ = $1; };
-and_exp : and_exp TK_OC_AND eq_exp { $$ = asd_new("&"); asd_add_child($$, $1); asd_add_child($$, $3); }
+and_exp : and_exp TK_OC_AND eq_exp { $$ = ast_new("&"); ast_add_child($$, $1); ast_add_child($$, $3); }
         | eq_exp { $$ = $1; };
 
 /* Expressão de igualdade */
-eq_exp : eq_exp equality ineq_exp { $$ = $2; asd_add_child($$, $1); asd_add_child($$, $3); }
+eq_exp : eq_exp equality ineq_exp { $$ = $2; ast_add_child($$, $1); ast_add_child($$, $3); }
        | ineq_exp { $$ = $1; };
-equality : TK_OC_EQ { $$ = asd_new("=="); }
-         | TK_OC_NE { $$ = asd_new("!="); };
+equality : TK_OC_EQ { $$ = ast_new("=="); }
+         | TK_OC_NE { $$ = ast_new("!="); };
 
 /* Expressão de desigualdade */
-ineq_exp : ineq_exp inequality sum_exp { $$ = $2; asd_add_child($$, $1); asd_add_child($$, $3); }
+ineq_exp : ineq_exp inequality sum_exp { $$ = $2; ast_add_child($$, $1); ast_add_child($$, $3); }
          | sum_exp { $$ = $1; };
-inequality : TK_OC_GE { $$ = asd_new(">="); }
-           | TK_OC_LE { $$ = asd_new("<="); }
-           | '<' { $$ = asd_new("<"); }
-           | '>' { $$ = asd_new(">"); };
+inequality : TK_OC_GE { $$ = ast_new(">="); }
+           | TK_OC_LE { $$ = ast_new("<="); }
+           | '<' { $$ = ast_new("<"); }
+           | '>' { $$ = ast_new(">"); };
 
 /* Expressões de soma e subtração */
-sum_exp : sum_exp sum prod_exp { $$ = $2; asd_add_child($$, $1); asd_add_child($$, $3); }
+sum_exp : sum_exp sum prod_exp { $$ = $2; ast_add_child($$, $1); ast_add_child($$, $3); }
         | prod_exp { $$ = $1; };
-sum : '+' { $$ = asd_new("+"); }
-    | '-' { $$ = asd_new("-"); };
+sum : '+' { $$ = ast_new("+"); }
+    | '-' { $$ = ast_new("-"); };
 
 /* Expressões de produto e divisão */
-prod_exp : prod_exp prod unary_exp { $$ = $2; asd_add_child($$, $1); asd_add_child($$, $3); }
+prod_exp : prod_exp prod unary_exp { $$ = $2; ast_add_child($$, $1); ast_add_child($$, $3); }
          | unary_exp { $$ = $1; };
-prod : '*' { $$ = asd_new("*"); }
-     | '/' { $$ = asd_new("/"); }
-     | '%' { $$ = asd_new("%"); };
+prod : '*' { $$ = ast_new("*"); }
+     | '/' { $$ = ast_new("/"); }
+     | '%' { $$ = ast_new("%"); };
 
 /* Expressões unárias */
-unary_exp : unary unary_exp { $$ = $1; asd_add_child($$, $2); }
+unary_exp : unary unary_exp { $$ = $1; ast_add_child($$, $2); }
           |  par_exp { $$ = $1; }; 
-unary : '-' { $$ = asd_new("-"); }
-      | '!' { $$ = asd_new("!"); };
+unary : '-' { $$ = ast_new("-"); }
+      | '!' { $$ = ast_new("!"); };
 
 /* Parênteses */
 par_exp : '(' expression ')' { $$ = $2; }
         | operand { $$ = $1; };
 
 /* Operandos */
-operand : TK_IDENTIFICADOR { $$ = asd_new($1.token); }
+operand : TK_IDENTIFICADOR { $$ = ast_new($1.token); }
         | literal          { $$ = $1; }
         | func_call        { $$ = $1; };
-literal : TK_LIT_FALSE  { $$ = asd_new($1.token); }
-        | TK_LIT_FLOAT  { $$ = asd_new($1.token); }
-        | TK_LIT_INT    { $$ = asd_new($1.token); }
-        | TK_LIT_TRUE   { $$ = asd_new($1.token); };
+literal : TK_LIT_FALSE  { $$ = ast_new($1.token); }
+        | TK_LIT_FLOAT  { $$ = ast_new($1.token); }
+        | TK_LIT_INT    { $$ = ast_new($1.token); }
+        | TK_LIT_TRUE   { $$ = ast_new($1.token); };
 /* FIM DEFINIÇÃO DE DEFINIÇÃO DE EXPRESSÕES (Item 3.5) */
 
 %%

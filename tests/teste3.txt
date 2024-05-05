@@ -1,0 +1,5 @@
+() | int / foo2 {
+  oifae = true,
+  v2 = 2,
+  v4 = 4,
+}

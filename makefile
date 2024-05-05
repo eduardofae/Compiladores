@@ -12,7 +12,7 @@ LIBS=
 
 DEPS = $(PARSER) $(SCANNER)
 
-_OBJ = main.o lex.yy.o parser.tab.o asd.o valor_lexico.o
+_OBJ = main.o lex.yy.o parser.tab.o ast.o valor_lexico.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS)
