@@ -2,5 +2,6 @@
 obj
 README.md
 .tarignore
-test
-teste-etapa-2.txt
+test*
+output2dot.sh
+bla*

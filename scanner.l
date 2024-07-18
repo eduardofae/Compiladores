@@ -6,6 +6,7 @@
 
 %{
     #include "parser.tab.h"
+    extern void *arvore;
 %}
 
     /* Opções do Flex */
@@ -35,10 +36,10 @@
 "|"  { return TK_OC_OR;  }
 
     /* Palavras Literais */
-"true"          { return TK_LIT_TRUE;  }
-"false"         { return TK_LIT_FALSE; }
-[0-9]+          { return TK_LIT_INT;   }
-[0-9]*\.[0-9]+  { return TK_LIT_FLOAT; }
+"true"          { yylval.valor_lexico = cria_valor(yylineno, LIT, strdup(yytext)); return TK_LIT_TRUE;  }
+"false"         { yylval.valor_lexico = cria_valor(yylineno, LIT, strdup(yytext)); return TK_LIT_FALSE;  }
+[0-9]+          { yylval.valor_lexico = cria_valor(yylineno, LIT, strdup(yytext)); return TK_LIT_INT;  }
+[0-9]*\.[0-9]+  { yylval.valor_lexico = cria_valor(yylineno, LIT, strdup(yytext)); return TK_LIT_FLOAT;  }
 
     /* Comentários */
 "//".* {}
@@ -52,10 +53,11 @@
 [-!*/%+<>{}()=,;] { return *yytext; }
 
     /* Identificadores */
-[a-z_][a-z0-9_]* { return TK_IDENTIFICADOR; }
+[a-z_][a-z0-9_]* { yylval.valor_lexico = cria_valor(yylineno, ID, strdup(yytext)); return TK_IDENTIFICADOR;  }
 
     /* Quebra de Linha e Espaços */
 "\n" {}
+"\r" {}
 " "  {}
 "\t" {}
 

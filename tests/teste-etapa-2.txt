@@ -1,12 +1,14 @@
-int g1; g2; g3,
-float g4; g5,
-bool g6,
-
+int global,
+float fae,
 () | int / foo1 {
-  int v1; v2; v3,
+  v1 = 1,
   float v4; v5,
   bool v6; v7,
 }
+
+int g; j,
+bool k,
+float i,
 
 (int x) | float / foo2 {
   int v1; v2; v3,
@@ -22,15 +24,26 @@ bool g6,
   return x,
   return (x *(9 + 5/(2---2)*9)|(2+9)),
   if (true) {
-    
+    int x,
+    var0 = 0,
+    v3 = 3,
+    float cebola; vinicius,
+    v4 = 4,
+    v5 = 5,
   } else {
-
+    bool edf; jpkb,
+    var = 1,
+    while (false) {
+      var = -5,
+    },
+    var10 = 10,
   },
   if (false) {
-
+    bool edfae,
   },
   while (true) {
-
+    var2 = 2,
+    var3 = 80,
   },
   
 }
@@ -38,4 +51,3 @@ bool g6,
 (float x; bool y) | bool / foo3 {
   
 }
-
