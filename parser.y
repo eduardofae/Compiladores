@@ -20,7 +20,10 @@
 %define parse.error verbose
 
 %code requires { #include "ast.h" 
-                 #include "valor_lexico.h" }
+                 #include "types.h"
+                 #include "tables.h"
+                 #include "lex_value.h"
+                 #include "error.h" }
 
 %union {
     struct val valor_lexico;

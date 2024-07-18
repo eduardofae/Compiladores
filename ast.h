@@ -1,15 +1,17 @@
 #ifndef _ARVORE_H_
 #define _ARVORE_H_
+#include "types.h"
 
 typedef struct tree {
   char *label;
+  enum types type;
   int number_of_children;
   struct tree *father;
   struct tree **children;
 } ast;
 
 // Cria um novo nodo de ast
-ast *ast_new(const char *label);
+ast *ast_new(const char *label, enum types type);
 
 // Libera recursivamente a memória alocada para um nodo de ast e seus filhos
 void ast_free(ast *tree);
