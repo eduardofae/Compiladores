@@ -16,6 +16,7 @@
 %{
     extern int yylineno;
     extern void *arvore;
+    extern void *stack;
 %}
 %define parse.error verbose
 
@@ -30,9 +31,9 @@
     ast *no;
 }
 
+%token TK_PR_BOOL
 %token TK_PR_INT
 %token TK_PR_FLOAT
-%token TK_PR_BOOL
 %token TK_PR_IF
 %token TK_PR_ELSE
 %token TK_PR_WHILE
@@ -76,15 +77,10 @@
 %type<no> or_exp
 %type<no> and_exp
 %type<no> eq_exp
-%type<no> equality
 %type<no> ineq_exp
-%type<no> inequality
 %type<no> sum_exp
-%type<no> sum
 %type<no> prod_exp
-%type<no> prod
 %type<no> unary_exp
-%type<no> unary
 %type<no> par_exp
 %type<no> operand
 %type<no> literal
@@ -96,15 +92,15 @@ program : lst_elements { $$ = get_root($1); arvore = $$; }
         |  { $$ = NULL; arvore = $$; } ;
 lst_elements : lst_elements element { $$ = $2;
                                       if ($2 == NULL) $$ = $1;
-                                      else if ($1 != NULL) ast_add_child($1, $2); }
+                                      else if ($1 != NULL) add_child($1, $2); }
              | element { $$ = $1; };
 element : global_var { $$ = $1; }
         | func       { $$ = $1; };
 
 /* Definição de um tipo, que será usado em definições da gramática */
-type : TK_PR_BOOL  { $$ = NULL; }
-     | TK_PR_INT   { $$ = NULL; }
-     | TK_PR_FLOAT { $$ = NULL; };
+type : TK_PR_BOOL  { $$ = new_ast("type", BOOL);  }
+     | TK_PR_INT   { $$ = new_ast("type", INT);   }
+     | TK_PR_FLOAT { $$ = new_ast("type", FLOAT); };
 
 /* Definição de uma variável global (Item 3.1) */
 global_var : type lst_ids ',' { $$ = $2; };
@@ -114,11 +110,13 @@ lst_ids : lst_ids ';' TK_IDENTIFICADOR { $$ = $1; }
 
 /* INÍCIO DEFINIÇÃO DE FUNÇÃO (Item 3.2) */
 /* Definção geral */
-func : header body { $$ = $1; ast_add_child($$, $2); };
+func : header body { $$ = $1; add_child($$, $2); };
 
 /* Definção do Cabeçalho */
-header : '(' lst_parameters ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = ast_new($7.token); }
-       | '(' ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = ast_new($6.token); };
+header : '(' lst_parameters ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = new_ast($7.token, $5->type);
+                                                                     free_ast($5); }
+       | '(' ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = new_ast($6.token, $4->type);
+                                                      free_ast($4); };
 lst_parameters : lst_parameters ';' parameter { $$ = $1; }
                | parameter { $$ = $1; };
 parameter : type TK_IDENTIFICADOR { $$ = $1; };
@@ -133,7 +131,7 @@ command_block : '{' lst_commands '}' { $$ = get_root($2); }
               | '{' '}' { $$ = NULL; };
 lst_commands : lst_commands command ',' { $$ = $2;
                                           if ($2 == NULL) $$ = $1;
-                                          else if ($1 != NULL) ast_add_child($1, $2); }
+                                          else if ($1 != NULL) add_child($1, $2); }
              | command ',' { $$ = $1; };
 
 
@@ -148,29 +146,43 @@ command : local_var             { $$ = $1; }
 
 /* Declaração e atribuição de Variáveis */
 local_var : type lst_ids { $$ = $2; };
-atrib : TK_IDENTIFICADOR '=' expression { $$ = ast_new("="); ast *n = ast_new($1.token); ast_add_child($$, n); ast_add_child($$, $3); };
+atrib : TK_IDENTIFICADOR '=' expression { enum types type = search_table_stack(stack, $1.token)->type;
+                                          $$ = new_ast("=", type);    
+                                          ast *n = new_ast($1.token, type); 
+                                          add_child($$, n); 
+                                          add_child($$, $3); };
 
 /* Chamadas de função */
-func_call : TK_IDENTIFICADOR '(' lst_args ')' { char str[6] = "call "; strcat(str, $1.token); $$ = ast_new(str); ast_add_child($$, get_root($3)); }
-          | TK_IDENTIFICADOR '(' ')' { char str[6] = "call "; strcat(str, $1.token); $$ = ast_new(str); };
-lst_args : lst_args ';' expression { $$ = $3; ast_add_child($1, $3); }
+func_call : TK_IDENTIFICADOR '(' lst_args ')' { enum types type = search_table_stack(stack, $1.token)->type;
+                                                char str[6] = "call "; 
+                                                strcat(str, $1.token); 
+                                                $$ = new_ast(str, type); 
+                                                add_child($$, get_root($3)); }
+          | TK_IDENTIFICADOR '(' ')' { enum types type = search_table_stack(stack, $1.token)->type;
+                                       char str[6] = "call "; 
+                                       strcat(str, $1.token); 
+                                       $$ = new_ast(str, type); };
+
+lst_args : lst_args ';' expression { $$ = $3; add_child($1, $3); }
          | expression { $$ = $1; };
 
 /* Comando de Retorno */
-return : TK_PR_RETURN expression { $$ = ast_new("return"); ast_add_child($$, $2); };
+return : TK_PR_RETURN expression { $$ = new_ast("return", $2->type); add_child($$, $2); };
 
 /* Comandos de Controle de Fluxo */
 control_flux : conditional { $$ = $1; }
              | iteractive  { $$ = $1; };
-conditional : TK_PR_IF '(' expression ')' command_block TK_PR_ELSE command_block { $$ = ast_new("if");
-                                                                                   ast_add_child($$, $3);
-                                                                                   ast_add_child($$, $5); 
-                                                                                   ast_add_child($$, $7); }
-             | TK_PR_IF '(' expression ')' command_block { $$ = ast_new("if");
-                                                           ast_add_child($$, $3);
-                                                           ast_add_child($$, $5); }
+conditional : TK_PR_IF '(' expression ')' command_block TK_PR_ELSE command_block { $$ = new_ast("if", infer_type($3->type, $5->type));
+                                                                                   add_child($$, $3);
+                                                                                   add_child($$, $5); 
+                                                                                   add_child($$, $7); }
+            | TK_PR_IF '(' expression ')' command_block { $$ = new_ast("if", infer_type($3->type, $5->type));
+                                                          add_child($$, $3);
+                                                          add_child($$, $5); };
 
-iteractive : TK_PR_WHILE '(' expression ')' command_block { $$ = ast_new("while"); ast_add_child($$, $3); ast_add_child($$, $5); };
+iteractive : TK_PR_WHILE '(' expression ')' command_block { $$ = new_ast("while", infer_type($3->type, $5->type)); 
+                                                            add_child($$, $3); 
+                                                            add_child($$, $5); };
 /* FIM DEFINIÇÃO DE UM COMANDO (Item 3.4) */
 
 
@@ -179,56 +191,56 @@ iteractive : TK_PR_WHILE '(' expression ')' command_block { $$ = ast_new("while"
 expression : or_exp { $$ = $1; };
 
 /* Expressões OR e AND */
-or_exp : or_exp TK_OC_OR and_exp { $$ = ast_new("|"); ast_add_child($$, $1); ast_add_child($$, $3); }
-       | and_exp { $$ = $1; };
-and_exp : and_exp TK_OC_AND eq_exp { $$ = ast_new("&"); ast_add_child($$, $1); ast_add_child($$, $3); }
+or_exp  : or_exp TK_OC_OR and_exp  { $$ = new_ast("|", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
+        | and_exp { $$ = $1; };
+and_exp : and_exp TK_OC_AND eq_exp { $$ = new_ast("&", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
         | eq_exp { $$ = $1; };
 
 /* Expressão de igualdade */
-eq_exp : eq_exp equality ineq_exp { $$ = $2; ast_add_child($$, $1); ast_add_child($$, $3); }
+eq_exp : eq_exp TK_OC_EQ ineq_exp { $$ = new_ast("==", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
+       | eq_exp TK_OC_NE ineq_exp { $$ = new_ast("!=", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
        | ineq_exp { $$ = $1; };
-equality : TK_OC_EQ { $$ = ast_new("=="); }
-         | TK_OC_NE { $$ = ast_new("!="); };
 
 /* Expressão de desigualdade */
-ineq_exp : ineq_exp inequality sum_exp { $$ = $2; ast_add_child($$, $1); ast_add_child($$, $3); }
+ineq_exp : ineq_exp TK_OC_GE sum_exp { $$ = new_ast(">=", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
+         | ineq_exp TK_OC_LE sum_exp { $$ = new_ast("<=", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
+         | ineq_exp '<' sum_exp      { $$ = new_ast("<", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3);  }
+         | ineq_exp '>' sum_exp      { $$ = new_ast(">", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3);  }
          | sum_exp { $$ = $1; };
-inequality : TK_OC_GE { $$ = ast_new(">="); }
-           | TK_OC_LE { $$ = ast_new("<="); }
-           | '<' { $$ = ast_new("<"); }
-           | '>' { $$ = ast_new(">"); };
 
 /* Expressões de soma e subtração */
-sum_exp : sum_exp sum prod_exp { $$ = $2; ast_add_child($$, $1); ast_add_child($$, $3); }
+sum_exp : sum_exp '+' prod_exp { $$ = new_ast("+", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
+        | sum_exp '-' prod_exp { $$ = new_ast("+", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
         | prod_exp { $$ = $1; };
-sum : '+' { $$ = ast_new("+"); }
-    | '-' { $$ = ast_new("-"); };
 
 /* Expressões de produto e divisão */
-prod_exp : prod_exp prod unary_exp { $$ = $2; ast_add_child($$, $1); ast_add_child($$, $3); }
+prod_exp : prod_exp '*' unary_exp { $$ = new_ast("*", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
+         | prod_exp '/' unary_exp { $$ = new_ast("/", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
+         | prod_exp '%' unary_exp { $$ = new_ast("%", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
          | unary_exp { $$ = $1; };
-prod : '*' { $$ = ast_new("*"); }
-     | '/' { $$ = ast_new("/"); }
-     | '%' { $$ = ast_new("%"); };
 
 /* Expressões unárias */
-unary_exp : unary unary_exp { $$ = $1; ast_add_child($$, $2); }
-          |  par_exp { $$ = $1; }; 
-unary : '-' { $$ = ast_new("-"); }
-      | '!' { $$ = ast_new("!"); };
+unary_exp : '-' unary_exp { $$ = new_ast("-", $2->type); add_child($$, $2); }
+          | '!' unary_exp { $$ = new_ast("!", $2->type); add_child($$, $2); }
+          | par_exp { $$ = $1; };
 
 /* Parênteses */
 par_exp : '(' expression ')' { $$ = $2; }
         | operand { $$ = $1; };
 
 /* Operandos */
-operand : TK_IDENTIFICADOR { $$ = ast_new($1.token); }
+operand : TK_IDENTIFICADOR { struct entry *entry = search_table_stack(stack, label);
+                             if(entry == NULL) {
+                                error_message(ERR_UNDECLARED);
+                                return ERR_UNDECLARED;
+                             }
+                             $$ = new_ast($1.token, entry->type); }
         | literal          { $$ = $1; }
-        | func_call        { $$ = $1; };
-literal : TK_LIT_FALSE  { $$ = ast_new($1.token); }
-        | TK_LIT_FLOAT  { $$ = ast_new($1.token); }
-        | TK_LIT_INT    { $$ = ast_new($1.token); }
-        | TK_LIT_TRUE   { $$ = ast_new($1.token); };
+        | func_call        { $$ = $1; }; /*TODO TESTE*/
+literal : TK_LIT_FALSE  { $$ = new_ast($1.token, BOOL);  }
+        | TK_LIT_FLOAT  { $$ = new_ast($1.token, FLOAT); }
+        | TK_LIT_INT    { $$ = new_ast($1.token, INT);   }
+        | TK_LIT_TRUE   { $$ = new_ast($1.token, BOOL);  };
 /* FIM DEFINIÇÃO DE DEFINIÇÃO DE EXPRESSÕES (Item 3.5) */
 
 %%

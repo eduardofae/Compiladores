@@ -7,14 +7,16 @@ enum token_types {
 };
 
 enum types {
-    INT,
-    FLOAT,
-    BOOL
+    BOOL  = 258,
+    INT   = 259,
+    FLOAT = 260
 };
 
 enum natures {
     VAR,
     FUNC
 };
+
+enum types infer_type(enum types type1, enum types type2);
 
 #endif //_TYPES_H_

@@ -21,24 +21,21 @@ struct table_stack{
     struct table_stack *next;
 };
 
-struct val cria_valor(int line, int type, char* token);
+// Entries
+struct entry new_entry(int line, enum natures nature, enum types type, struct val value);
 
-struct table *create_table();
-
+// Tables
+struct table *new_table();
 void add_entry(struct table *table, struct entry *entry);
-
+struct entry *search_table(struct table *table, char *label);
 void free_table(struct table *table);
 
-struct entry create_entry(int line, enum natures nature, enum types type, struct val value);
-
-struct table_stack *create_table_stack();
-
+// Stack
+struct table_stack *new_table_stack();
 void pop_table(struct table_stack *table_stack);
-
 void push_table(struct table_stack *table_stack, struct table *new_table);
-
-struct entry *search_table(struct table *table, char *label);
-
-struct entry *search_stack(struct table_stack *table_stack, char *label);
+struct entry *search_table_stack(struct table_stack *table_stack, char *label);
+void free_single_table_stack(struct table_stack *table_stack);
+void free_table_stack(struct table_stack *table_stack);
 
 #endif //_TABLES_H_

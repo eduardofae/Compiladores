@@ -1,7 +1,18 @@
 #include "tables.h"
 #include <string.h>
+#include <stdlib.h>
 
-struct table *create_table(){
+
+struct entry new_entry(int line, enum natures nature, enum types type, struct val value){
+    struct entry entry;
+    entry.line = line;
+    entry.nature = nature;
+    entry.type = type;
+    entry.value = value;
+    return entry;
+}
+
+struct table *new_table(){
     struct table *table = NULL;
     table = calloc(1, sizeof(struct table));
     if (table != NULL){
@@ -19,6 +30,16 @@ void add_entry(struct table *table, struct entry *entry){
     }
 }
 
+struct entry *search_table(struct table *table, char *label){
+    for(int i = 0; i < table->num_entries; i++){
+        struct entry *entry = table->entries[i];
+        if(!strcmp(entry->value.token, label)){
+            return entry;
+        }
+    }
+    return NULL;
+}
+
 void free_table(struct table *table)
 {
   if (table != NULL) {
@@ -31,16 +52,7 @@ void free_table(struct table *table)
   }
 }
 
-struct entry create_entry(int line, enum natures nature, enum types type, struct val value){
-    struct entry entry;
-    entry.line = line;
-    entry.nature = nature;
-    entry.type = type;
-    entry.value = value;
-    return entry;
-}
-
-struct table_stack *create_table_stack(){
+struct table_stack *new_table_stack(){
     struct table_stack *table_stack = NULL;
     table_stack = calloc(1, sizeof(struct table_stack));
     if (table_stack != NULL){
@@ -53,10 +65,10 @@ struct table_stack *create_table_stack(){
 void push_table(struct table_stack *table_stack, struct table *new_table){
     if (new_table != NULL) {
         if(table_stack == NULL){
-            table_stack = create_table_stack();
+            table_stack = new_table_stack();
         }
         if(table_stack->top != NULL) {
-            struct table_stack *next = create_table_stack();
+            struct table_stack *next = new_table_stack();
             next->top = table_stack->top;
             next->next = table_stack->next;
             table_stack->next = next;
@@ -75,22 +87,12 @@ void pop_table(struct table_stack *table_stack){
     }
 }
 
-struct entry *search_table(struct table *table, char *label){
-    for(int i = 0; i < table->num_entries; i++){
-        struct entry *entry = table->entries[i];
-        if(!strcmp(entry->value.token, label)){
-            return entry;
-        }
-    }
-    return NULL;
-}
-
-struct entry *search_stack(struct table_stack *table_stack, char *label){
+struct entry *search_table_stack(struct table_stack *table_stack, char *label){
     if(table_stack == NULL) {
         return NULL;
     }
 
-    struct table_stack *aux = create_table_stack();
+    struct table_stack *aux = new_table_stack();
     aux->top = table_stack->top;
     aux->next = table_stack->next;
     do{
@@ -107,14 +109,14 @@ struct entry *search_stack(struct table_stack *table_stack, char *label){
     return NULL;
 }
 
-void free_table_stack(struct table_stack *table_stack){
-    //for()
-    free_single_table_stack(table_stack);
-}
-
 void free_single_table_stack(struct table_stack *table_stack){
     free(table_stack->top);
     free(table_stack->next);
     free(table_stack);
 }
 
+
+void free_table_stack(struct table_stack *table_stack){
+    //for()
+    free_single_table_stack(table_stack);
+}

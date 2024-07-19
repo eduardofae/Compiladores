@@ -14,4 +14,6 @@ enum error_types{
 
 enum error_types check_nature(struct entry entry, enum natures nature);
 
+void error_message(enum error_types error);
+
 #endif //_ERROR_H_

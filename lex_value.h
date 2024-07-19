@@ -9,6 +9,6 @@ struct val {
     char* token;
 };
 
-struct val cria_valor(int line, int type, char* token);
+struct val new_value(int line, int type, char* token);
 
 #endif //_LEX_VALUE_H_
