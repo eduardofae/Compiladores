@@ -1,4 +1,4 @@
-FILENAME=etapa3
+FILENAME=etapa4
 SCANNER=lex.yy.c
 PARSER=parser.tab.c parser.tab.h parser.output
 

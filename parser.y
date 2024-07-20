@@ -16,7 +16,8 @@
 %{
     extern int yylineno;
     extern void *arvore;
-    extern void *stack;
+    struct table_stack *stack;
+    enum types cur_type;
 %}
 %define parse.error verbose
 
@@ -84,42 +85,73 @@
 %type<no> par_exp
 %type<no> operand
 %type<no> literal
+%type<no> push
+%type<no> pop
 
 %%
 
+/* Adiciona e remove uma tabela do Stack */
+push: { struct table *table = new_table();
+        push_table(stack, table);
+        $$ = NULL; };
+pop: { pop_table(stack);
+       $$ = NULL; };
+
 /* Definição de um programa */
-program : lst_elements { $$ = get_root($1); arvore = $$; }
-        |  { $$ = NULL; arvore = $$; } ;
+program : push lst_elements pop { $$ = get_root($2); arvore = $$; }
+        | { $$ = NULL; arvore = $$; } ;
 lst_elements : lst_elements element { $$ = $2;
-                                      if ($2 == NULL) $$ = $1;
+                                      if      ($2 == NULL) $$ = $1;
                                       else if ($1 != NULL) add_child($1, $2); }
              | element { $$ = $1; };
 element : global_var { $$ = $1; }
         | func       { $$ = $1; };
 
 /* Definição de um tipo, que será usado em definições da gramática */
-type : TK_PR_BOOL  { $$ = new_ast("type", BOOL);  }
-     | TK_PR_INT   { $$ = new_ast("type", INT);   }
-     | TK_PR_FLOAT { $$ = new_ast("type", FLOAT); };
+type : TK_PR_BOOL  { cur_type = BOOL;  $$ = NULL; }
+     | TK_PR_INT   { cur_type = INT;   $$ = NULL; }
+     | TK_PR_FLOAT { cur_type = FLOAT; $$ = NULL; };
 
 /* Definição de uma variável global (Item 3.1) */
 global_var : type lst_ids ',' { $$ = $2; };
-lst_ids : lst_ids ';' TK_IDENTIFICADOR { $$ = $1; }
-        | TK_IDENTIFICADOR { $$ = NULL; };
-
+lst_ids : lst_ids ';' TK_IDENTIFICADOR { struct entry *entry = search_table(stack->top, $3.token);
+                                         enum error_types error = check_declaration(entry, yylineno);
+                                         if(error != ERR_NONE) exit(error);
+                                         *entry = new_entry(yylineno, VAR, cur_type, $3);
+                                         add_entry(stack->top, entry);
+                                         $$ = $1; }
+        | TK_IDENTIFICADOR { struct entry *entry = search_table(stack->top, $1.token);
+                             enum error_types error = check_declaration(entry, yylineno);
+                             if(error != ERR_NONE) exit(error);
+                             *entry = new_entry(yylineno, VAR, cur_type, $1);
+                             add_entry(stack->top, entry);
+                             $$ = NULL; };
 
 /* INÍCIO DEFINIÇÃO DE FUNÇÃO (Item 3.2) */
 /* Definção geral */
-func : header body { $$ = $1; add_child($$, $2); };
+func : push header body pop { $$ = $1; add_child($$, $3); };
 
 /* Definção do Cabeçalho */
-header : '(' lst_parameters ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = new_ast($7.token, $5->type);
-                                                                     free_ast($5); }
-       | '(' ')' TK_OC_OR type '/' TK_IDENTIFICADOR { $$ = new_ast($6.token, $4->type);
-                                                      free_ast($4); };
+header : '(' lst_parameters ')' TK_OC_OR type '/' TK_IDENTIFICADOR { struct entry *entry = search_table(stack->next->top, $7.token);
+                                                                     enum error_types error = check_declaration(entry, yylineno);
+                                                                     if(error != ERR_NONE) exit(error);
+                                                                     *entry = new_entry(yylineno, FUNC, cur_type, $7);
+                                                                     add_entry(stack->next->top, entry);
+                                                                     $$ = new_ast($7.token, cur_type); }
+       | '(' ')' TK_OC_OR type '/' TK_IDENTIFICADOR { struct entry *entry = search_table(stack->next->top, $6.token);
+                                                      enum error_types error = check_declaration(entry, yylineno);
+                                                      if(error != ERR_NONE) exit(error);
+                                                      *entry = new_entry(yylineno, FUNC, cur_type, $6);
+                                                      add_entry(stack->next->top, entry);
+                                                      $$ = new_ast($6.token, cur_type); };
 lst_parameters : lst_parameters ';' parameter { $$ = $1; }
                | parameter { $$ = $1; };
-parameter : type TK_IDENTIFICADOR { $$ = $1; };
+parameter : type TK_IDENTIFICADOR { struct entry *entry = search_table(stack->top, $2.token);
+                                    enum error_types error = check_declaration(entry, yylineno);
+                                    if(error != ERR_NONE) exit(error);
+                                    *entry = new_entry(yylineno, VAR, cur_type, $2);
+                                    add_entry(stack->top, entry);
+                                    $$ = $1; };
 
 /* Definição do Corpo */
 body : command_block { $$ = $1; };
@@ -137,31 +169,37 @@ lst_commands : lst_commands command ',' { $$ = $2;
 
 /* INÍCIO DEFINIÇÃO DE UM COMANDO (Item 3.4) */
 /* Comando Geral */
-command : local_var             { $$ = $1; }
-        | atrib                 { $$ = $1; }
-        | control_flux          { $$ = $1; }
-        | return                { $$ = $1; }
-        | command_block         { $$ = $1; }
-        | func_call             { $$ = $1; };
+command : local_var              { $$ = $1; }
+        | atrib                  { $$ = $1; }
+        | control_flux           { $$ = $1; }
+        | return                 { $$ = $1; }
+        | push command_block pop { $$ = $2; }
+        | func_call              { $$ = $1; };
 
 /* Declaração e atribuição de Variáveis */
 local_var : type lst_ids { $$ = $2; };
-atrib : TK_IDENTIFICADOR '=' expression { enum types type = search_table_stack(stack, $1.token)->type;
-                                          $$ = new_ast("=", type);    
-                                          ast *n = new_ast($1.token, type); 
+atrib : TK_IDENTIFICADOR '=' expression { struct entry *entry = search_table_stack(stack, $1.token);
+                                          enum error_types error = check_use(entry, FUNC, yylineno);
+                                          if(error != ERR_NONE) exit(error);
+                                          $$ = new_ast("=", entry->type);
+                                          ast *n = new_ast($1.token, entry->type); 
                                           add_child($$, n); 
                                           add_child($$, $3); };
 
 /* Chamadas de função */
-func_call : TK_IDENTIFICADOR '(' lst_args ')' { enum types type = search_table_stack(stack, $1.token)->type;
+func_call : TK_IDENTIFICADOR '(' lst_args ')' { struct entry *entry = search_table_stack(stack, $1.token);
+                                                enum error_types error = check_use(entry, FUNC, yylineno);
+                                                if(error != ERR_NONE) exit(error);
                                                 char str[6] = "call "; 
                                                 strcat(str, $1.token); 
-                                                $$ = new_ast(str, type); 
+                                                $$ = new_ast(str, entry->type); 
                                                 add_child($$, get_root($3)); }
-          | TK_IDENTIFICADOR '(' ')' { enum types type = search_table_stack(stack, $1.token)->type;
+          | TK_IDENTIFICADOR '(' ')' { struct entry *entry = search_table_stack(stack, $1.token);
+                                       enum error_types error = check_use(entry, FUNC, yylineno);
+                                       if(error != ERR_NONE) exit(error);
                                        char str[6] = "call "; 
                                        strcat(str, $1.token); 
-                                       $$ = new_ast(str, type); };
+                                       $$ = new_ast(str, entry->type); };
 
 lst_args : lst_args ';' expression { $$ = $3; add_child($1, $3); }
          | expression { $$ = $1; };
@@ -172,17 +210,18 @@ return : TK_PR_RETURN expression { $$ = new_ast("return", $2->type); add_child($
 /* Comandos de Controle de Fluxo */
 control_flux : conditional { $$ = $1; }
              | iteractive  { $$ = $1; };
-conditional : TK_PR_IF '(' expression ')' command_block TK_PR_ELSE command_block { $$ = new_ast("if", infer_type($3->type, $5->type));
+conditional : TK_PR_IF '(' expression ')' push command_block pop TK_PR_ELSE push command_block pop 
+                                                                                 { $$ = new_ast("if", infer_type($3->type, $6->type));
                                                                                    add_child($$, $3);
-                                                                                   add_child($$, $5); 
-                                                                                   add_child($$, $7); }
-            | TK_PR_IF '(' expression ')' command_block { $$ = new_ast("if", infer_type($3->type, $5->type));
-                                                          add_child($$, $3);
-                                                          add_child($$, $5); };
+                                                                                   add_child($$, $6); 
+                                                                                   add_child($$, $10); }
+            | TK_PR_IF '(' expression ')' push command_block pop { $$ = new_ast("if", infer_type($3->type, $6->type));
+                                                                   add_child($$, $3);
+                                                                   add_child($$, $6); };
 
-iteractive : TK_PR_WHILE '(' expression ')' command_block { $$ = new_ast("while", infer_type($3->type, $5->type)); 
-                                                            add_child($$, $3); 
-                                                            add_child($$, $5); };
+iteractive : TK_PR_WHILE '(' expression ')' push command_block pop { $$ = new_ast("while", infer_type($3->type, $6->type)); 
+                                                                     add_child($$, $3); 
+                                                                     add_child($$, $6); };
 /* FIM DEFINIÇÃO DE UM COMANDO (Item 3.4) */
 
 
@@ -230,10 +269,8 @@ par_exp : '(' expression ')' { $$ = $2; }
 
 /* Operandos */
 operand : TK_IDENTIFICADOR { struct entry *entry = search_table_stack(stack, label);
-                             if(entry == NULL) {
-                                error_message(ERR_UNDECLARED);
-                                return ERR_UNDECLARED;
-                             }
+                             enum error_types error = check_use(entry, VAR, yylineno);
+                             if(error != ERR_NONE) exit(error);
                              $$ = new_ast($1.token, entry->type); }
         | literal          { $$ = $1; }
         | func_call        { $$ = $1; }; /*TODO TESTE*/

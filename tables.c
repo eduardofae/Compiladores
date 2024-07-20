@@ -82,8 +82,8 @@ void pop_table(struct table_stack *table_stack){
         struct table_stack *aux = table_stack->next;
         table_stack->top  = table_stack->next->top;
         table_stack->next = table_stack->next->next;
-
-        free_single_table_stack(aux);
+        free_table(aux->top);
+        free(aux);
     }
 }
 
@@ -98,25 +98,21 @@ struct entry *search_table_stack(struct table_stack *table_stack, char *label){
     do{
         struct entry *entry = search_table(aux->top, label);
         if(entry != NULL) {
-            free_single_table_stack(aux);
+            free(aux);
             return entry;
         }
         aux->top = aux->next->top;
         aux->next = aux->next->next;
     }while(aux->next != NULL);
 
-    free_single_table_stack(aux);
+    free(aux);
     return NULL;
 }
 
-void free_single_table_stack(struct table_stack *table_stack){
-    free(table_stack->top);
-    free(table_stack->next);
-    free(table_stack);
-}
-
-
 void free_table_stack(struct table_stack *table_stack){
-    //for()
-    free_single_table_stack(table_stack);
+    if(table_stack->next != NULL){
+        free_table_stack(table_stack->next);
+    }
+    free_table(table_stack->top);
+    free(table_stack);
 }
