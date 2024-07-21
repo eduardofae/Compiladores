@@ -14,10 +14,10 @@ enum error_types{
 
 enum error_types check_use(struct entry *entry, enum natures nature, int line, char *label);
 
-enum error_types check_declaration(struct entry *entry, enum natures nature, int line);
+enum error_types check_declaration(struct entry *entry, int line);
 
 enum error_types check_nature(struct entry entry, enum natures nature, int line);
 
-void error_message(enum error_types error, char *label, int d_line, int u_line);
+void error_message(enum error_types error, char *label, enum natures nature, int d_line, int u_line);
 
 #endif //_ERROR_H_

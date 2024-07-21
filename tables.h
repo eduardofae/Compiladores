@@ -33,7 +33,7 @@ void free_table(struct table *table);
 // Stack
 struct table_stack *new_table_stack();
 void pop_table(struct table_stack *table_stack);
-void push_table(struct table_stack *table_stack, struct table *new_table);
+void push_table(struct table_stack **table_stack, struct table *new_table);
 struct entry *search_table_stack(struct table_stack *table_stack, char *label);
 void free_table_stack(struct table_stack *table_stack);
 

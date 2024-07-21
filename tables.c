@@ -31,6 +31,7 @@ void add_entry(struct table *table, struct entry *entry){
 }
 
 struct entry *search_table(struct table *table, char *label){
+    if(table == NULL) return NULL;
     for(int i = 0; i < table->num_entries; i++){
         struct entry *entry = table->entries[i];
         if(!strcmp(entry->value.token, label)){
@@ -42,14 +43,14 @@ struct entry *search_table(struct table *table, char *label){
 
 void free_table(struct table *table)
 {
-  if (table != NULL) {
-    int i;
-    for (i = 0; i < table->num_entries; i++) {
-      free(table->entries[i]);
-    }
-    free(table->entries);
-    free(table);
-  }
+//   if (table != NULL) {
+//     int i;
+//     for (i = 0; i < table->num_entries; i++) {
+//       free(table->entries[i]);
+//     }
+//     free(table->entries);
+//     free(table);
+//   }
 }
 
 struct table_stack *new_table_stack(){
@@ -62,28 +63,35 @@ struct table_stack *new_table_stack(){
     return table_stack;
 }
 
-void push_table(struct table_stack *table_stack, struct table *new_table){
+void push_table(struct table_stack **table_stack, struct table *new_table){
     if (new_table != NULL) {
-        if(table_stack == NULL){
-            table_stack = new_table_stack();
+        if(*table_stack == NULL){
+            *table_stack = new_table_stack();
         }
-        if(table_stack->top != NULL) {
+        if((*table_stack)->top != NULL) {
             struct table_stack *next = new_table_stack();
-            next->top = table_stack->top;
-            next->next = table_stack->next;
-            table_stack->next = next;
+            next->top = (*table_stack)->top;
+            next->next = (*table_stack)->next;
+            (*table_stack)->next = next;
         }
-        table_stack->top = new_table;
+        (*table_stack)->top = new_table;
     }
 }
 
 void pop_table(struct table_stack *table_stack){
     if(table_stack != NULL){
-        struct table_stack *aux = table_stack->next;
-        table_stack->top  = table_stack->next->top;
-        table_stack->next = table_stack->next->next;
-        free_table(aux->top);
-        free(aux);
+        // struct table_stack *aux = table_stack;
+        if(table_stack->next != NULL)
+        {
+            table_stack->top = table_stack->next->top;
+            table_stack->next = table_stack->next->next;
+        }
+        else
+        {
+            table_stack = NULL;
+        }
+        // free_table(aux->top);
+        // free(aux);
     }
 }
 
@@ -92,27 +100,22 @@ struct entry *search_table_stack(struct table_stack *table_stack, char *label){
         return NULL;
     }
 
-    struct table_stack *aux = new_table_stack();
-    aux->top = table_stack->top;
-    aux->next = table_stack->next;
-    do{
+    struct table_stack *aux = table_stack;
+    while(aux != NULL){
         struct entry *entry = search_table(aux->top, label);
         if(entry != NULL) {
-            free(aux);
             return entry;
         }
-        aux->top = aux->next->top;
-        aux->next = aux->next->next;
-    }while(aux->next != NULL);
+        aux = aux->next;
+    }
 
-    free(aux);
     return NULL;
 }
 
 void free_table_stack(struct table_stack *table_stack){
-    if(table_stack->next != NULL){
-        free_table_stack(table_stack->next);
-    }
-    free_table(table_stack->top);
-    free(table_stack);
+    // if(table_stack->next != NULL){
+    //     free_table_stack(table_stack->next);
+    // }
+    // free_table(table_stack->top);
+    // free(table_stack);
 }

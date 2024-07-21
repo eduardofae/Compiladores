@@ -4,7 +4,7 @@ PARSER=parser.tab.c parser.tab.h parser.output
 
 IDIR=include
 CC=gcc
-CFLAGS=-I$(IDIR)
+CFLAGS=-I$(IDIR) -g
 
 ODIR=obj
 

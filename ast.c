@@ -26,7 +26,6 @@ void free_ast(ast *tree)
       free_ast(tree->children[i]);
     }
     free(tree->children);
-    free(tree->father);
     free(tree->label);
     free(tree);
   }

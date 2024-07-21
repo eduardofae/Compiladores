@@ -7,9 +7,9 @@ enum token_types {
 };
 
 enum types {
-    BOOL  = 258,
-    INT   = 259,
-    FLOAT = 260
+    BOOL   = 258,
+    INT    = 259,
+    FLOAT  = 260
 };
 
 enum natures {
