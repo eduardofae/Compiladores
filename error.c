@@ -35,10 +35,10 @@ void error_message(enum error_types error, char *label, enum natures nature, int
     char *nature_str = nature == VAR ? "variável" : "função";
     switch(error){
         case ERR_UNDECLARED:
-            printf("Erro: A %s %s, na linha %d não foi declarada!", nature_str, label, u_line);
+            printf("Erro: A %s %s, na linha %d, não foi declarada!", nature_str, label, u_line);
             return;
         case ERR_DECLARED:
-            printf("Erro: A %s %s, na linha %d já foi declarada na linha %d!", nature_str, label, u_line, d_line);
+            printf("Erro: O indentificador %s, na linha %d, já foi declarado na linha %d!", label, u_line, d_line);
             return;
         case ERR_VARIABLE:
             printf("Erro: A %s %s, declarada na linha %d, foi utilizada como uma função na linha %d!", nature_str, label, d_line, u_line);

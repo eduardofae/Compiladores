@@ -2,7 +2,7 @@ int global,
 float fae,
 () | int / foo1 {
   int v1,
-  v1 = 1,
+  fae = 1,
   float v4; v5,
   bool v6; v7,
 }
@@ -60,7 +60,7 @@ float g4,
   if(false){},
   if (false) {
     bool edfae,
-  },
+    {bool jpkb; vini,{float jpkb; vini,{float jpkb; vini,{float jpkb; vini,{float jpkb; vini,{{float jpkb,{float jpkb,{float jpkb,{float jpkb; vini,{float jpkb,{{{{{{{{bool var,{{{{{{{{{{{{{int var,},},},},},},},},},},},},},},},},},},},},},},},},},},},},},},},},},
   int var2,
   float var3,
   while (true) {

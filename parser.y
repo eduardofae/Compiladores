@@ -246,7 +246,7 @@ ineq_exp : ineq_exp TK_OC_GE sum_exp { $$ = new_ast(">=", infer_type($1->type, $
 
 /* Expressões de soma e subtração */
 sum_exp : sum_exp '+' prod_exp { $$ = new_ast("+", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
-        | sum_exp '-' prod_exp { $$ = new_ast("+", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
+        | sum_exp '-' prod_exp { $$ = new_ast("-", infer_type($1->type, $3->type)); add_child($$, $1); add_child($$, $3); }
         | prod_exp { $$ = $1; };
 
 /* Expressões de produto e divisão */
