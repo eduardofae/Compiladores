@@ -1,7 +1,6 @@
 #include "tables.h"
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 
 struct entry new_entry(int line, enum natures nature, enum types type, struct val value){
