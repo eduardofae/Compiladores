@@ -4,3 +4,4 @@ parser.tab*
 lex.yy.c
 saida*
 bla*
+.vs*

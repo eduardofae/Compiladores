@@ -4,11 +4,12 @@
 #include "ast.h"
 #define ARQUIVO_SAIDA "saida.dot"
 
-ast *ast_new(const char *label)
+ast *new_ast(const char *label, enum types type)
 {
   ast *ret = NULL;
   ret = calloc(1, sizeof(ast));
   if (ret != NULL) {
+    ret->type = type;
     ret->label = strdup(label);
     ret->number_of_children = 0;
     ret->children = NULL;
@@ -17,12 +18,12 @@ ast *ast_new(const char *label)
   return ret;
 }
 
-void ast_free(ast *tree)
+void free_ast(ast *tree)
 {
   if (tree != NULL) {
     int i;
     for (i = 0; i < tree->number_of_children; i++) {
-      ast_free(tree->children[i]);
+      free_ast(tree->children[i]);
     }
     free(tree->children);
     free(tree->label);
@@ -30,7 +31,7 @@ void ast_free(ast *tree)
   }
 }
 
-void ast_add_child(ast *tree, ast *child)
+void add_child(ast *tree, ast *child)
 {
   if (tree != NULL && child != NULL) {
     tree->number_of_children++;

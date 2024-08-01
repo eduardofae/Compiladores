@@ -1,21 +1,23 @@
 #ifndef _ARVORE_H_
 #define _ARVORE_H_
+#include "types.h"
 
 typedef struct tree {
   char *label;
+  enum types type;
   int number_of_children;
   struct tree *father;
   struct tree **children;
 } ast;
 
 // Cria um novo nodo de ast
-ast *ast_new(const char *label);
+ast *new_ast(const char *label, enum types type);
 
 // Libera recursivamente a memória alocada para um nodo de ast e seus filhos
-void ast_free(ast *tree);
+void free_ast(ast *tree);
 
 // Adiciona um filho a um nodo ast
-void ast_add_child(ast *tree, ast *child);
+void add_child(ast *tree, ast *child);
 
 // Dado um nodo de uma ast, retorna o nodo ast raiz da árvore
 ast *get_root(ast *tree);

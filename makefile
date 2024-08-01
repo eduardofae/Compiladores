@@ -1,10 +1,10 @@
-FILENAME=etapa3
+FILENAME=etapa4
 SCANNER=lex.yy.c
 PARSER=parser.tab.c parser.tab.h parser.output
 
 IDIR=include
 CC=gcc
-CFLAGS=-I$(IDIR)
+CFLAGS=-I$(IDIR) -g
 
 ODIR=obj
 
@@ -12,7 +12,7 @@ LIBS=
 
 DEPS = $(PARSER) $(SCANNER)
 
-_OBJ = main.o lex.yy.o parser.tab.o ast.o valor_lexico.o
+_OBJ = main.o lex.yy.o parser.tab.o ast.o types.o tables.o error.o lex_value.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS)
