@@ -101,7 +101,7 @@
 %%
 
 /* Definição de um programa */
-program : push lst_elements pop { $$ = get_root($2); $$->code = $2->code; arvore = $$; }
+program : push lst_elements pop { $$ = get_root($2); if($$ != NULL) $$->code = $2->code; arvore = $$; }
         | { $$ = NULL; arvore = $$; } ;
 lst_elements : lst_elements element { $$ = $2;
                                       if      ($2 == NULL) $$ = $1;
@@ -170,7 +170,7 @@ body : command_block { $$ = $1; };
 
 
 /* Definição de um bloco de comando (Item 3.3) */
-command_block : '{' lst_commands '}' { $$ = get_root($2); $$->code = $2->code; }
+command_block : '{' lst_commands '}' { $$ = get_root($2); if($$ != NULL) $$->code = $2->code; }
               | '{' '}' { $$ = NULL; };
 lst_commands : lst_commands command ',' { $$ = $2;
                                           if ($2 == NULL) $$ = $1;
