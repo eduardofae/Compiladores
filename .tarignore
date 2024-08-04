@@ -6,3 +6,4 @@ test*
 output2dot.sh
 bla*
 .vs*
+ilocsim.py
