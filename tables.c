@@ -1,6 +1,7 @@
 #include "tables.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 struct entry new_entry(int line, enum natures nature, enum types type, struct val value){
@@ -26,7 +27,7 @@ struct table *new_table(){
 void add_entry(struct table *table, struct entry *entry){
     if(table == NULL || entry == NULL) return;
 
-    itoa(SIZE_OF_INT*table->num_entries, entry->shift, 10);
+    sprintf(entry->shift, "%d", SIZE_OF_INT*table->num_entries);
     entry->scope = strdup(table->scope);
 
     table->num_entries++;

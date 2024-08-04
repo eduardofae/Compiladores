@@ -1,4 +1,4 @@
-FILENAME=etapa4
+FILENAME=etapa5
 SCANNER=lex.yy.c
 PARSER=parser.tab.c parser.tab.h parser.output
 
@@ -37,7 +37,7 @@ entrega: all clean
 
 clean:
 	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~
-	rm -f $(FILENAME).tgz
+	rm -f *.tgz
 	rm -f $(FILENAME)
 	rm -f $(PARSER)
 	rm -f $(SCANNER)
