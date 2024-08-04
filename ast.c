@@ -73,6 +73,6 @@ void exporta(ast *tree)
 {
   if(tree != NULL)
   {
-    printf(tree->code);
+    printf("%s", tree->code);
   }
 }
