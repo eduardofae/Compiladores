@@ -86,15 +86,15 @@ void push_table(struct table_stack **table_stack, struct table *new_table){
 void pop_table(struct table_stack *table_stack){
     if(table_stack == NULL) return;
 
-    // free_table(table_stack->top);
+    free_table(table_stack->top);
     if(table_stack->next != NULL) {
         struct table_stack *aux = table_stack->next;
         table_stack->top = table_stack->next->top;
         table_stack->next = table_stack->next->next;
-        // free(aux);
+        free(aux);
     }
     else {
-        // free(table_stack);
+        free(table_stack);
         table_stack = NULL;
     }
 }

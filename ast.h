@@ -1,6 +1,7 @@
 #ifndef _ARVORE_H_
 #define _ARVORE_H_
 #include "types.h"
+#include "iloc.h"
 
 typedef struct tree {
   char *label;
@@ -11,7 +12,7 @@ typedef struct tree {
 
   // Geração de código
   // struct iloc_list code;
-  char *code;
+  struct iloc_list *code;
   char *temp;
 } ast;
 

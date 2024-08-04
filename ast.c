@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "ast.h"
-#define ARQUIVO_SAIDA "saida.dot"
 
 ast *new_ast(const char *label, enum types type)
 {
@@ -73,6 +72,6 @@ void exporta(ast *tree)
 {
   if(tree != NULL)
   {
-    printf("%s", tree->code);
+    export_code(tree->code);
   }
 }
