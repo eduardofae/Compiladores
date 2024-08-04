@@ -86,7 +86,6 @@ char *gen_code(char *operation, char* arg1, char* arg2, char* arg3){
 
 char *merge_code(int num_codes, ...){
     char *code = calloc(1, sizeof(char)*1024);
-    int i = 0; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MUITO IMPORTANTE NÃO REMOVER POR NADA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     va_list valist;
     va_start(valist, num_codes);
 
