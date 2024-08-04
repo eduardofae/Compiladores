@@ -8,6 +8,11 @@ typedef struct tree {
   int number_of_children;
   struct tree *father;
   struct tree **children;
+
+  // Geração de código
+  // struct iloc_list code;
+  char *code;
+  char *temp;
 } ast;
 
 // Cria um novo nodo de ast
@@ -24,6 +29,5 @@ ast *get_root(ast *tree);
 
 // Printa formatado de acordo com os requerimentos da etapa 3 informações de um dado nodo ast
 void exporta(ast *tree);
-
 
 #endif //_ARVORE_H_

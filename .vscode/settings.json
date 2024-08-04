@@ -3,6 +3,8 @@
         "types.h": "c",
         "string.h": "c",
         "cstdlib": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "stdio.h": "c",
+        "lex_value.h": "c"
     }
 }
