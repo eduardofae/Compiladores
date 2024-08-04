@@ -187,7 +187,7 @@ command : local_var              { $$ = $1; }
         | atrib                  { $$ = $1; }
         | control_flux           { $$ = $1; }
         | return                 { $$ = $1; }
-        | push command_block pop { $$ = $2; }
+        | /* push */ command_block /* pop */ { $$ = $1; /* $$ = $2; */ }
         | func_call              { $$ = $1; };
 
 /* Declaração e atribuição de Variáveis */
@@ -224,9 +224,9 @@ return : TK_PR_RETURN expression { $$ = new_ast("return", $2->type); add_child($
 /* Comandos de Controle de Fluxo */
 control_flux : conditional { $$ = $1; }
              | iteractive  { $$ = $1; };
-conditional : TK_PR_IF '(' expression ')' push command_block pop TK_PR_ELSE push command_block pop 
+conditional : TK_PR_IF '(' expression ')' /* push */ command_block /* pop */ TK_PR_ELSE /* push */ command_block /* pop */ 
                                                                                  { $$ = new_ast("if", BOOL);
-                                                                                   add_child($$, $3); add_child($$, $6); add_child($$, $10);
+                                                                                   add_child($$, $3); add_child($$, $5); add_child($$, $7); /* add_child($$, $6); add_child($$, $10); */ 
                                                                                    char *l1 = new_label();
                                                                                    char *l2 = new_label();
                                                                                    char *t1 = new_temp();
@@ -239,10 +239,10 @@ conditional : TK_PR_IF '(' expression ')' push command_block pop TK_PR_ELSE push
                                                                                    struct iloc_list *c5 = gen_code("jumpI", l3, NULL, NULL);
                                                                                    struct iloc_list *c6 = gen_code("nop", l2, NULL, NULL); // coloca label
                                                                                    struct iloc_list *c7 = gen_code("nop", l3, NULL, NULL); // coloca label
-                                                                                   $$->code = merge_code(10, $3->code, c1, c2, c3, c4, $6->code, c5, c6, $10->code, c7);
+                                                                                   $$->code = merge_code(10, $3->code, c1, c2, c3, c4, $5->code, c5, c6, $7->code, c7);
                                                                                     }
-            | TK_PR_IF '(' expression ')' push command_block pop { $$ = new_ast("if", BOOL);
-                                                                   add_child($$, $3); add_child($$, $6);
+            | TK_PR_IF '(' expression ')' /* push */ command_block /* pop */ { $$ = new_ast("if", BOOL);
+                                                                   add_child($$, $3); add_child($$, $5); /* add_child($$, $6); */
                                                                    char *l1 = new_label();
                                                                    char *l2 = new_label();
                                                                    char *t1 = new_temp();
@@ -253,9 +253,9 @@ conditional : TK_PR_IF '(' expression ')' push command_block pop TK_PR_ELSE push
                                                                    struct iloc_list *c4 = gen_code("nop", l1, NULL, NULL); // coloca label
                                                                    struct iloc_list *c5 = gen_code("jumpI", l2, NULL, NULL);
                                                                    struct iloc_list *c6 = gen_code("nop", l2, NULL, NULL); // coloca label
-                                                                   $$->code = merge_code(8, $3->code, c1, c2, c3, c4, $6->code, c5, c6); };
-iteractive : TK_PR_WHILE '(' expression ')' push command_block pop { $$ = new_ast("while", BOOL); 
-                                                                     add_child($$, $3); add_child($$, $6);
+                                                                   $$->code = merge_code(8, $3->code, c1, c2, c3, c4, $5->code, c5, c6); };
+iteractive : TK_PR_WHILE '(' expression ')' /* push */ command_block /* pop */ { $$ = new_ast("while", BOOL); 
+                                                                     add_child($$, $3); add_child($$, $5); /* add_child($$, $6); */
                                                                      char *l1 = new_label();
                                                                      char *l2 = new_label();
                                                                      char *l3 = new_label();
@@ -268,7 +268,7 @@ iteractive : TK_PR_WHILE '(' expression ')' push command_block pop { $$ = new_as
                                                                      struct iloc_list *c5 = gen_code("nop", l2, NULL, NULL); // coloca label
                                                                      struct iloc_list *c6 = gen_code("jumpI", l1, NULL, NULL);
                                                                      struct iloc_list *c7 = gen_code("nop", l3, NULL, NULL); // coloca label
-                                                                     $$->code = merge_code(9, c1, $3->code, c2, c3, c4, c5, $6->code, c6, c7); };
+                                                                     $$->code = merge_code(9, c1, $3->code, c2, c3, c4, c5, $5->code, c6, c7); };
 /* FIM DEFINIÇÃO DE UM COMANDO (Item 3.4) */
 
 
