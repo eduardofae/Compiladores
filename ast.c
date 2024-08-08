@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "ast.h"
-#define ARQUIVO_SAIDA "saida.dot"
 
 ast *new_ast(const char *label, enum types type)
 {
@@ -53,18 +52,26 @@ ast *get_root(ast *tree)
   }
 }
 
+// void exporta(ast *tree)
+// {
+//   int i;
+//   if (tree != NULL) {
+//     printf("%p [label=\"%s\"];\n", tree, tree->label);
+
+//     for (i = 0; i < tree->number_of_children; i++) {
+//       printf("%p, %p\n", tree, tree->children[i]);
+//     }
+
+//     for (i = 0; i < tree->number_of_children; i++) {
+//       exporta(tree->children[i]);
+//     }
+//   }
+// }
+
 void exporta(ast *tree)
 {
-  int i;
-  if (tree != NULL) {
-    printf("%p [label=\"%s\"];\n", tree, tree->label);
-
-    for (i = 0; i < tree->number_of_children; i++) {
-      printf("%p, %p\n", tree, tree->children[i]);
-    }
-
-    for (i = 0; i < tree->number_of_children; i++) {
-      exporta(tree->children[i]);
-    }
+  if(tree != NULL)
+  {
+    export_code(tree->code);
   }
 }

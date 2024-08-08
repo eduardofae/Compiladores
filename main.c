@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "ast.h"
+#include "iloc.h"
 extern int yyparse(void);
 extern int yylex_destroy(void);
 void *arvore = NULL;

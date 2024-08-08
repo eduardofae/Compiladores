@@ -1,6 +1,7 @@
 #include "tables.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 struct entry new_entry(int line, enum natures nature, enum types type, struct val value){
@@ -18,12 +19,16 @@ struct table *new_table(){
     if (table != NULL) {
         table->entries = NULL;
         table->num_entries = 0;
+        table->scope = "rbss";
     }
     return table;
 }
 
 void add_entry(struct table *table, struct entry *entry){
     if(table == NULL || entry == NULL) return;
+
+    sprintf(entry->shift, "%d", SIZE_OF_INT*table->num_entries);
+    entry->scope = strdup(table->scope);
 
     table->num_entries++;
     table->entries = realloc(table->entries, table->num_entries * sizeof(struct entry));
@@ -73,6 +78,7 @@ void push_table(struct table_stack **table_stack, struct table *new_table){
         next->top = (*table_stack)->top;
         next->next = (*table_stack)->next;
         (*table_stack)->next = next;
+        new_table->scope = "rfp";
     }
     (*table_stack)->top = new_table;
 }

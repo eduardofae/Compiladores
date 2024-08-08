@@ -4,16 +4,21 @@
 #include "types.h"
 #include "lex_value.h"
 
+#define SIZE_OF_INT 4
+
 struct entry {
     int line;
     enum natures nature;
     enum types type;
     struct val value;
+    char shift[11];
+    char *scope;
 };
 
 struct table {
     struct entry **entries;
     int num_entries;
+    char *scope;
 };
 
 struct table_stack{
