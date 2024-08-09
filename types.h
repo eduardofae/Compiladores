@@ -17,6 +17,11 @@ enum natures {
     FUNC
 };
 
+enum bool {
+    TRUE = 1,
+    FALSE = 0
+};
+
 enum types infer_type(enum types type1, enum types type2);
 
 #endif //_TYPES_H_

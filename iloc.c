@@ -1,4 +1,5 @@
 #include "iloc.h"
+#include "types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,25 +23,31 @@ char *new_temp(){
 }
 
 void export_code(struct iloc_list *iloc_list){
+    enum bool eax = TRUE;
     for (int i = 0; i < iloc_list->num_ilocs; i++)
     {
         struct iloc *iloc = iloc_list->iloc[i];
         char *operation = iloc->operation;
         char **args = iloc->args;
         if(!strcmp(operation, "storeAI")){
-            printf("%s %s => %s, %s\n", operation, args[0], args[1], args[2]);
+            printf("movl %s, %s(%%%s)\n", eax == TRUE ? "%eax" : "%edx", args[2], args[1]);
+            eax = FALSE;
         }
         else if(!strcmp(operation, "loadI")){
-            printf("%s %s => %s\n", operation, args[0], args[1]);
+            printf("movl $%s, %%eax\n", args[0]);
+            eax = TRUE;
         }
         else if(!strcmp(operation, "cmp_NE")){
-            printf("%s %s, %s -> %s\n", operation, args[0], args[1], args[2]);
+            printf("cmpl %%edx, %%eax\n");
+            printf("setne %%al\n");
+            printf("movzbl %%al, %%eax\n");
+            eax = TRUE;
         }
         else if(!strcmp(operation, "nop")){
-            printf("%s:\n%s\n", args[0], operation);
+            printf(".%s:\n", args[0]);
         }
         else if(!strcmp(operation, "jumpI")){
-            printf("%s -> %s\n", operation, args[0]);
+            printf("jmp .%s\n", args[0]);
         }
         else if(!strcmp(operation, "or")){
             printf("%s %s, %s => %s\n", operation, args[0], args[1], args[2]);
@@ -49,37 +56,54 @@ void export_code(struct iloc_list *iloc_list){
             printf("%s %s, %s => %s\n", operation, args[0], args[1], args[2]);
         }
         else if(!strcmp(operation, "cmp_EQ")){
-            printf("%s %s, %s -> %s\n", operation, args[0], args[1], args[2]);
+            printf("cmpl %%edx, %%eax\n");
+            printf("sete %%al\n");
+            printf("movzbl %%al, %%eax\n");
+            eax = TRUE;
         }
         else if(!strcmp(operation, "cmp_GE")){
-            printf("%s %s, %s -> %s\n", operation, args[0], args[1], args[2]);
+            printf("cmpl %%edx, %%eax\n");
+            printf("setge %%al\n");
+            printf("movzbl %%al, %%eax\n");
+            eax = TRUE;
         }   
         else if(!strcmp(operation, "cmp_LE")){
-            printf("%s %s, %s -> %s\n", operation, args[0], args[1], args[2]);
+            printf("cmpl %%edx, %%eax\n");
+            printf("setle %%al\n");
+            printf("movzbl %%al, %%eax\n");
+            eax = TRUE;
         }
         else if(!strcmp(operation, "cmp_GT")){
-            printf("%s %s, %s -> %s\n", operation, args[0], args[1], args[2]);
+            printf("cmpl %%edx, %%eax\n");
+            printf("setg %%al\n");
+            printf("movzbl %%al, %%eax\n");
+            eax = TRUE;
         }
         else if(!strcmp(operation, "cmp_LT")){
-            printf("%s %s, %s -> %s\n", operation, args[0], args[1], args[2]);
+            printf("cmpl %%edx, %%eax\n");
+            printf("setl %%al\n");
+            printf("movzbl %%al, %%eax\n");
+            eax = TRUE;
         }
         else if(!strcmp(operation, "add")){
-            printf("%s %s, %s => %s\n", operation, args[0], args[1], args[2]);
+            printf("addl %%eax, %%edx\n");
+            eax = FALSE;
         }
         else if(!strcmp(operation, "sub")){
-            printf("%s %s, %s => %s\n", operation, args[0], args[1], args[2]);
+            printf("subl %%edx, %%eax\n");
+            eax = TRUE;
         }
         else if(!strcmp(operation, "mult")){
-            printf("%s %s, %s => %s\n", operation, args[0], args[1], args[2]);
+            printf("imull %%eax, %%edx\n");
+            eax = FALSE;
         }
         else if(!strcmp(operation, "div")){
-            printf("%s %s, %s => %s\n", operation, args[0], args[1], args[2]);
-        }
-        else if(!strcmp(operation, "multI")){
-            printf("%s %s, %s => %s\n", operation, args[0], args[1], args[2]);
+            printf("idiv %%edx\n");
+            eax = TRUE;
         }
         else if(!strcmp(operation, "loadAI")){
-            printf("%s %s, %s => %s\n", operation, args[0], args[1], args[2]);
+            printf("movl %s(%%%s), %s\n", args[1], args[0], eax == FALSE ? "%eax" : "%edx");
+            eax = !eax;
         }
         else if(!strcmp(operation, "cbr")){
             printf("%s %s -> %s, %s\n", operation, args[0], args[1], args[2]);

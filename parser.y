@@ -195,7 +195,7 @@ local_var : type lst_ids { $$ = $2; };
 atrib : id_use '=' expression  { $$ = new_ast("=", $1->type);
                                  add_child($$, $1); add_child($$, $3);
                                  struct entry *entry = search_table_stack(stack, $1->label);
-                                 struct iloc_list *c = gen_code("storeAI", $3->temp, entry->scope, entry->shift);
+                                 struct iloc_list *c = gen_code("storeAI", $3->temp, entry->scope, !strcmp(entry->scope, "rbp") ? entry->shift : entry->value.token);
                                  $$->code = merge_code(2, $3->code, c);
                                };
 
@@ -373,25 +373,27 @@ unary_exp : unary unary_exp { $$ = new_ast($1.token, $2->type);
                               add_child($$, $2);
                               $$->temp = new_temp();
                               if(!strcmp($1.token, "-")){
-                                struct iloc_list *c = gen_code("multI", $2->temp, "-1", $$->temp);
-                                $$->code = merge_code(2, $2->code, c);
+                                   char *t1 = new_temp();
+                                   struct iloc_list *c1 = gen_code("loadI", "-1", t1, NULL);
+                                   struct iloc_list *c2 = gen_code("mult", $2->temp, t1, $$->temp);
+                                   $$->code = merge_code(3, $2->code, c1, c2);
                               }
                               else {
-                                char *l1 = new_label();
-                                char *l2 = new_label();
-                                char *t1 = new_temp();
-                                struct iloc_list *c1 = gen_code("loadI", "0", t1, NULL);
-                                char *t2 = new_temp();
-                                struct iloc_list *c2 = gen_code("cmp_NE", t1, $2->temp, t2);
-                                struct iloc_list *c3 = gen_code("cbr", t2, l1, l2);
-                                char *l3 = new_label();
-                                struct iloc_list *c4 = gen_code("nop", l1, NULL, NULL); // coloca label
-                                struct iloc_list *c5 = gen_code("loadI", "0", $$->temp, NULL);
-                                struct iloc_list *c6 = gen_code("jumpI", l3, NULL, NULL);
-                                struct iloc_list *c7 = gen_code("nop", l2, NULL, NULL); // coloca label
-                                struct iloc_list *c8 = gen_code("loadI", "1", $$->temp, NULL);
-                                struct iloc_list *c9 = gen_code("nop", l3, NULL, NULL); // coloca label
-                                $$->code = merge_code(10, $2->code, c1, c2, c3, c4, c5, c6, c7, c8, c9);
+                                   char *l1 = new_label();
+                                   char *l2 = new_label();
+                                   char *t1 = new_temp();
+                                   struct iloc_list *c1 = gen_code("loadI", "0", t1, NULL);
+                                   char *t2 = new_temp();
+                                   struct iloc_list *c2 = gen_code("cmp_NE", t1, $2->temp, t2);
+                                   struct iloc_list *c3 = gen_code("cbr", t2, l1, l2);
+                                   char *l3 = new_label();
+                                   struct iloc_list *c4 = gen_code("nop", l1, NULL, NULL); // coloca label
+                                   struct iloc_list *c5 = gen_code("loadI", "0", $$->temp, NULL);
+                                   struct iloc_list *c6 = gen_code("jumpI", l3, NULL, NULL);
+                                   struct iloc_list *c7 = gen_code("nop", l2, NULL, NULL); // coloca label
+                                   struct iloc_list *c8 = gen_code("loadI", "1", $$->temp, NULL);
+                                   struct iloc_list *c9 = gen_code("nop", l3, NULL, NULL); // coloca label
+                                   $$->code = merge_code(10, $2->code, c1, c2, c3, c4, c5, c6, c7, c8, c9);
                               }}
           | par_exp { $$ = $1; };
 
@@ -406,7 +408,7 @@ par_exp : '(' expression ')' { $$ = $2; }
 operand : id_use        { $$ = $1;
                           $$->temp = new_temp();
                           struct entry *entry = search_table_stack(stack, $1->label);
-                          $$->code = gen_code("loadAI", entry->scope, (char *) entry->shift, $$->temp);
+                          $$->code = gen_code("loadAI", entry->scope, entry->shift, $$->temp);
                         }
         | literal       { $$ = $1;
                           $$->temp = new_temp();

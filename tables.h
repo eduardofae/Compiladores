@@ -11,7 +11,7 @@ struct entry {
     enum natures nature;
     enum types type;
     struct val value;
-    char shift[11];
+    char shift[12];
     char *scope;
 };
 
@@ -31,6 +31,7 @@ struct entry new_entry(int line, enum natures nature, enum types type, struct va
 
 // Tables
 struct table *new_table();
+void update_table_entries(struct table *table);
 void add_entry(struct table *table, struct entry *entry);
 struct entry *search_table(struct table *table, char *label);
 void free_table(struct table *table);

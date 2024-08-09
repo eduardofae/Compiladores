@@ -19,15 +19,23 @@ struct table *new_table(){
     if (table != NULL) {
         table->entries = NULL;
         table->num_entries = 0;
-        table->scope = "rbss";
+        table->scope = "rip";
     }
     return table;
+}
+
+void update_table_entries(struct table *table){
+    for(int i = 0; i < table->num_entries; i++) {
+        struct entry *entry = table->entries[i];
+        sprintf(entry->shift, "%d", atoi(entry->shift) - SIZE_OF_INT);
+    }
 }
 
 void add_entry(struct table *table, struct entry *entry){
     if(table == NULL || entry == NULL) return;
 
-    sprintf(entry->shift, "%d", SIZE_OF_INT*table->num_entries);
+    sprintf(entry->shift, "%d", -SIZE_OF_INT);
+    update_table_entries(table);
     entry->scope = strdup(table->scope);
 
     table->num_entries++;
@@ -78,7 +86,7 @@ void push_table(struct table_stack **table_stack, struct table *new_table){
         next->top = (*table_stack)->top;
         next->next = (*table_stack)->next;
         (*table_stack)->next = next;
-        new_table->scope = "rfp";
+        new_table->scope = "rbp";
     }
     (*table_stack)->top = new_table;
 }
