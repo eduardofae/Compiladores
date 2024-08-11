@@ -212,7 +212,7 @@ command : local_var              { $$ = $1; }
         | atrib                  { $$ = $1; }
         | control_flux           { $$ = $1; }
         | return                 { $$ = $1; }
-        | /* push */ command_block /* pop */ { $$ = $1; /* $$ = $2; */ }
+        | command_block          { $$ = $1; }
         | func_call              { $$ = $1; };
 
 /* Declaração e atribuição de Variáveis */
@@ -252,9 +252,9 @@ return : TK_PR_RETURN expression { $$ = new_ast("return", $2->type); add_child($
 /* Comandos de Controle de Fluxo */
 control_flux : conditional { $$ = $1; }
              | iteractive  { $$ = $1; };
-conditional : TK_PR_IF '(' expression ')' /* push */ command_block /* pop */ TK_PR_ELSE /* push */ command_block /* pop */ 
+conditional : TK_PR_IF '(' expression ')'  command_block TK_PR_ELSE  command_block 
                                                                                  { $$ = new_ast("if", BOOL);
-                                                                                   add_child($$, $3); add_child($$, $5); add_child($$, $7); /* add_child($$, $6); add_child($$, $10); */ 
+                                                                                   add_child($$, $3); add_child($$, $5); add_child($$, $7);
                                                                                    char *l1 = new_label();
                                                                                    char *l2 = new_label();
                                                                                    char *t1 = new_temp();
@@ -263,40 +263,40 @@ conditional : TK_PR_IF '(' expression ')' /* push */ command_block /* pop */ TK_
                                                                                    struct iloc_list *c2 = gen_code("cmp_NE", t1, $3->temp, t2);
                                                                                    struct iloc_list *c3 = gen_code("je", t2, l2, NULL);
                                                                                    char *l3 = new_label();
-                                                                                   struct iloc_list *c4 = gen_code("label", l1, NULL, NULL); // coloca label
+                                                                                   struct iloc_list *c4 = gen_code("label", l1, NULL, NULL);
                                                                                    struct iloc_list *c5 = gen_code("jumpI", l3, NULL, NULL);
-                                                                                   struct iloc_list *c6 = gen_code("label", l2, NULL, NULL); // coloca label
-                                                                                   struct iloc_list *c7 = gen_code("label", l3, NULL, NULL); // coloca label
-                                                                                   $$->code = merge_code(10, $3->code, c1, c2, c3, c4, $5->code, c5, c6, $7->code, c7);
+                                                                                   struct iloc_list *c6 = gen_code("label", l2, NULL, NULL);
+                                                                                   struct iloc_list *c7 = gen_code("label", l3, NULL, NULL);
+                                                                                   $$->code = merge_code(10, $3->code, c1, c2, c3, c4, $5 != NULL ? $5->code : $5, c5, c6, $7 != NULL ? $7->code : $7, c7);
                                                                                     }
-            | TK_PR_IF '(' expression ')' /* push */ command_block /* pop */ { $$ = new_ast("if", BOOL);
-                                                                   add_child($$, $3); add_child($$, $5); /* add_child($$, $6); */
-                                                                   char *l1 = new_label();
-                                                                   char *l2 = new_label();
-                                                                   char *t1 = new_temp();
-                                                                   struct iloc_list *c1 = gen_code("loadI", "0", t1, NULL);
-                                                                   char *t2 = new_temp();
-                                                                   struct iloc_list *c2 = gen_code("cmp_NE", t1, $3->temp, t2);
-                                                                   struct iloc_list *c3 = gen_code("je", t2, l2, NULL);
-                                                                   struct iloc_list *c4 = gen_code("label", l1, NULL, NULL); // coloca label
-                                                                   struct iloc_list *c5 = gen_code("jumpI", l2, NULL, NULL);
-                                                                   struct iloc_list *c6 = gen_code("label", l2, NULL, NULL); // coloca label
-                                                                   $$->code = merge_code(8, $3->code, c1, c2, c3, c4, $5->code, c5, c6); };
-iteractive : TK_PR_WHILE '(' expression ')' /* push */ command_block /* pop */ { $$ = new_ast("while", BOOL); 
-                                                                     add_child($$, $3); add_child($$, $5); /* add_child($$, $6); */
-                                                                     char *l1 = new_label();
-                                                                     char *l2 = new_label();
-                                                                     char *l3 = new_label();
-                                                                     char *t1 = new_temp();
-                                                                     struct iloc_list *c1 = gen_code("label", l1, NULL, NULL); // coloca label
-                                                                     struct iloc_list *c2 = gen_code("loadI", "0", t1, NULL);
-                                                                     char *t2 = new_temp();
-                                                                     struct iloc_list *c3 = gen_code("cmp_NE", t1, $3->temp, t2);
-                                                                     struct iloc_list *c4 = gen_code("je", t2, l3, NULL);
-                                                                     struct iloc_list *c5 = gen_code("label", l2, NULL, NULL); // coloca label
-                                                                     struct iloc_list *c6 = gen_code("jumpI", l1, NULL, NULL);
-                                                                     struct iloc_list *c7 = gen_code("label", l3, NULL, NULL); // coloca label
-                                                                     $$->code = merge_code(9, c1, $3->code, c2, c3, c4, c5, $5->code, c6, c7); };
+            | TK_PR_IF '(' expression ')'  command_block  { $$ = new_ast("if", BOOL);
+                                                            add_child($$, $3); add_child($$, $5);
+                                                            char *l1 = new_label();
+                                                            char *l2 = new_label();
+                                                            char *t1 = new_temp();
+                                                            struct iloc_list *c1 = gen_code("loadI", "0", t1, NULL);
+                                                            char *t2 = new_temp();
+                                                            struct iloc_list *c2 = gen_code("cmp_NE", t1, $3->temp, t2);
+                                                            struct iloc_list *c3 = gen_code("je", t2, l2, NULL);
+                                                            struct iloc_list *c4 = gen_code("label", l1, NULL, NULL); 
+                                                            struct iloc_list *c5 = gen_code("jumpI", l2, NULL, NULL);
+                                                            struct iloc_list *c6 = gen_code("label", l2, NULL, NULL); 
+                                                            $$->code = merge_code(8, $3->code, c1, c2, c3, c4, $5 != NULL ? $5->code : $5, c5, c6); };
+iteractive : TK_PR_WHILE '(' expression ')'  command_block    { $$ = new_ast("while", BOOL); 
+                                                                add_child($$, $3); add_child($$, $5);
+                                                                char *l1 = new_label();
+                                                                char *l2 = new_label();
+                                                                char *l3 = new_label();
+                                                                char *t1 = new_temp();
+                                                                struct iloc_list *c1 = gen_code("label", l1, NULL, NULL); 
+                                                                struct iloc_list *c2 = gen_code("loadI", "0", t1, NULL);
+                                                                char *t2 = new_temp();
+                                                                struct iloc_list *c3 = gen_code("cmp_NE", t1, $3->temp, t2);
+                                                                struct iloc_list *c4 = gen_code("je", t2, l3, NULL);
+                                                                struct iloc_list *c5 = gen_code("label", l2, NULL, NULL); 
+                                                                struct iloc_list *c6 = gen_code("jumpI", l1, NULL, NULL);
+                                                                struct iloc_list *c7 = gen_code("label", l3, NULL, NULL); 
+                                                                $$->code = merge_code(9, c1, $3->code, c2, c3, c4, c5, $5 != NULL ? $5->code : $5, c6, c7); };
 /* FIM DEFINIÇÃO DE UM COMANDO (Item 3.4) */
 
 
@@ -317,16 +317,16 @@ or_exp  : or_exp TK_OC_OR and_exp  {    $$ = new_ast("|", infer_type($1->type, $
                                         struct iloc_list *c1 = gen_code("loadI", "0", t1, NULL);
                                         struct iloc_list *c2 = gen_code("cmp_NE", t1, $1->temp, t2);
                                         struct iloc_list *c3 = gen_code("jne", t2, l3, NULL);
-                                        struct iloc_list *c4 = gen_code("label", l1, NULL, NULL); // coloca label
+                                        struct iloc_list *c4 = gen_code("label", l1, NULL, NULL); 
                                         struct iloc_list *c5 = gen_code("loadI", "0", t1, NULL);
                                         struct iloc_list *c6 = gen_code("cmp_NE", t1, $3->temp, t2);
                                         struct iloc_list *c7 = gen_code("jne", t2, l3, NULL);
-                                        struct iloc_list *c8 = gen_code("label", l2, NULL, NULL); // coloca label
+                                        struct iloc_list *c8 = gen_code("label", l2, NULL, NULL); 
                                         struct iloc_list *c9 = gen_code("loadI", "0", $$->temp, NULL);
                                         struct iloc_list *c10 = gen_code("jumpI", l4, NULL, NULL);
-                                        struct iloc_list *c11 = gen_code("label", l3, NULL, NULL); // coloca label
+                                        struct iloc_list *c11 = gen_code("label", l3, NULL, NULL); 
                                         struct iloc_list *c12 = gen_code("loadI", "1", $$->temp, NULL);
-                                        struct iloc_list *c13 = gen_code("label", l4, NULL, NULL); // coloca label
+                                        struct iloc_list *c13 = gen_code("label", l4, NULL, NULL); 
                                         $$->code = merge_code(15, $1->code, c1, c2, c3, c4, $3->code, c5, c6, c7, c8, c9, c10, c11, c12, c13); }
         | and_exp { $$ = $1; };
 and_exp : and_exp TK_OC_AND eq_exp {    $$ = new_ast("&", infer_type($1->type, $3->type)); 
@@ -341,16 +341,16 @@ and_exp : and_exp TK_OC_AND eq_exp {    $$ = new_ast("&", infer_type($1->type, $
                                         struct iloc_list *c1 = gen_code("loadI", "0", t1, NULL);
                                         struct iloc_list *c2 = gen_code("cmp_NE", t1, $1->temp, t2);
                                         struct iloc_list *c3 = gen_code("je", t2, l2, NULL);
-                                        struct iloc_list *c4 = gen_code("label", l1, NULL, NULL); // coloca label
+                                        struct iloc_list *c4 = gen_code("label", l1, NULL, NULL); 
                                         struct iloc_list *c5 = gen_code("loadI", "0", t1, NULL);
                                         struct iloc_list *c6 = gen_code("cmp_NE", t1, $3->temp, t2);
                                         struct iloc_list *c7 = gen_code("jne", t2, l3, NULL);
-                                        struct iloc_list *c8 = gen_code("label", l2, NULL, NULL); // coloca label
+                                        struct iloc_list *c8 = gen_code("label", l2, NULL, NULL); 
                                         struct iloc_list *c9 = gen_code("loadI", "0", $$->temp, NULL);
                                         struct iloc_list *c10 = gen_code("jumpI", l4, NULL, NULL);
-                                        struct iloc_list *c11 = gen_code("label", l3, NULL, NULL); // coloca label
+                                        struct iloc_list *c11 = gen_code("label", l3, NULL, NULL); 
                                         struct iloc_list *c12 = gen_code("loadI", "1", $$->temp, NULL);
-                                        struct iloc_list *c13 = gen_code("label", l4, NULL, NULL); // coloca label
+                                        struct iloc_list *c13 = gen_code("label", l4, NULL, NULL); 
                                         $$->code = merge_code(15, $1->code, c1, c2, c3, c4, $3->code, c5, c6, c7, c8, c9, c10, c11, c12, c13); }
         | eq_exp { $$ = $1; };
 
@@ -449,12 +449,12 @@ unary_exp : unary unary_exp { $$ = new_ast($1.token, $2->type);
                                    struct iloc_list *c2 = gen_code("cmp_NE", t1, $2->temp, t2);
                                    struct iloc_list *c3 = gen_code("je", t2, l2, NULL);
                                    char *l3 = new_label();
-                                   struct iloc_list *c4 = gen_code("label", l1, NULL, NULL); // coloca label
+                                   struct iloc_list *c4 = gen_code("label", l1, NULL, NULL); 
                                    struct iloc_list *c5 = gen_code("loadI", "0", $$->temp, NULL);
                                    struct iloc_list *c6 = gen_code("jumpI", l3, NULL, NULL);
-                                   struct iloc_list *c7 = gen_code("label", l2, NULL, NULL); // coloca label
+                                   struct iloc_list *c7 = gen_code("label", l2, NULL, NULL); 
                                    struct iloc_list *c8 = gen_code("loadI", "1", $$->temp, NULL);
-                                   struct iloc_list *c9 = gen_code("label", l3, NULL, NULL); // coloca label
+                                   struct iloc_list *c9 = gen_code("label", l3, NULL, NULL); 
                                    $$->code = merge_code(10, $2->code, c1, c2, c3, c4, c5, c6, c7, c8, c9);
                               }}
           | par_exp { $$ = $1; };
@@ -476,7 +476,7 @@ operand : id_use        { $$ = $1;
                           $$->temp = new_temp();
                           $$->code = gen_code("loadI", $1->label, $$->temp, NULL);
                         }
-        | func_call     { $$ = $1; }; /*TODO TESTE*/
+        | func_call     { $$ = $1; };
 literal : TK_LIT_FALSE  { $$ = new_ast($1.token, BOOL);  }
         | TK_LIT_FLOAT  { $$ = new_ast($1.token, FLOAT); }
         | TK_LIT_INT    { $$ = new_ast($1.token, INT);   }
