@@ -44,8 +44,7 @@ struct entry *search_table(struct table *table, char *label){
     return NULL;
 }
 
-void free_table(struct table *table)
-{
+void free_table(struct table *table){
     if(table == NULL) return;
 
     int i;

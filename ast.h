@@ -29,6 +29,9 @@ void add_child(ast *tree, ast *child);
 ast *get_root(ast *tree);
 
 // Printa formatado de acordo com os requerimentos da etapa 3 informações de um dado nodo ast
-void exporta(ast *tree);
+void exporta_ast(ast *tree);
+
+// Printa formatado o código assembly de acordo com a estrutura iloc_list presente em ast
+void exporta_code(ast *tree);
 
 #endif //_ARVORE_H_
