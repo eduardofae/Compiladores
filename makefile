@@ -46,3 +46,5 @@ clean:
 	rm -f $(FILENAME)
 	rm -f $(PARSER)
 	rm -f $(SCANNER)
+	rm -f o.s
+	rm -f programa

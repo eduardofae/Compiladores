@@ -145,6 +145,7 @@ void generateAsm(struct iloc_list *iloc_list){
             printf("\t.globl %s\n", args[0]);
             printf("\t.type %s, @function\n", args[0]);
             printf("%s:\n", args[0]);
+            printf(".LFB0:\n");
             printf("\tpushq %%rbp\n");
             printf("\tmovq %%rsp, %%rbp\n");
         }
