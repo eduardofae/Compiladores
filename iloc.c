@@ -23,7 +23,7 @@ char *new_temp(){
 }
 
 void export_code(struct iloc_list *iloc_list){
-    enum bool eax = TRUE;
+    enum bool eax = FALSE;
     for (int i = 0; i < iloc_list->num_ilocs; i++)
     {
         struct iloc *iloc = iloc_list->iloc[i];
@@ -34,7 +34,7 @@ void export_code(struct iloc_list *iloc_list){
             eax = FALSE;
         }
         else if(!strcmp(operation, "loadI")){
-            printf("movl $%s, %%eax\n", args[0]);
+            printf("movl $%s, %s\n", args[0], eax == FALSE ? "%eax" : "%edx");
             eax = TRUE;
         }
         else if(!strcmp(operation, "cmp_NE")){
@@ -43,23 +43,18 @@ void export_code(struct iloc_list *iloc_list){
             printf("movzbl %%al, %%eax\n");
             eax = TRUE;
         }
-        else if(!strcmp(operation, "nop")){
-            printf(".%s:\n", args[0]);
-        }
-        else if(!strcmp(operation, "jumpI")){
-            printf("jmp .%s\n", args[0]);
-        }
-        else if(!strcmp(operation, "or")){
-            printf("%s %s, %s => %s\n", operation, args[0], args[1], args[2]);
-        }
-        else if(!strcmp(operation, "and")){
-            printf("%s %s, %s => %s\n", operation, args[0], args[1], args[2]);
-        }
         else if(!strcmp(operation, "cmp_EQ")){
             printf("cmpl %%edx, %%eax\n");
             printf("sete %%al\n");
             printf("movzbl %%al, %%eax\n");
             eax = TRUE;
+        }
+        else if(!strcmp(operation, "label")){
+            printf(".%s:\n", args[0]);
+        }
+        else if(!strcmp(operation, "jumpI")){
+            printf("jmp .%s\n", args[0]);
+            eax = FALSE;
         }
         else if(!strcmp(operation, "cmp_GE")){
             printf("cmpl %%edx, %%eax\n");
@@ -86,27 +81,63 @@ void export_code(struct iloc_list *iloc_list){
             eax = TRUE;
         }
         else if(!strcmp(operation, "add")){
-            printf("addl %%eax, %%edx\n");
-            eax = FALSE;
+            printf("addl %%edx, %%eax\n");
+            eax = TRUE;
         }
         else if(!strcmp(operation, "sub")){
             printf("subl %%edx, %%eax\n");
             eax = TRUE;
         }
         else if(!strcmp(operation, "mult")){
-            printf("imull %%eax, %%edx\n");
-            eax = FALSE;
+            printf("imull %%edx, %%eax\n");
+            eax = TRUE;
         }
         else if(!strcmp(operation, "div")){
-            printf("idiv %%edx\n");
+            printf("movl %%edx, %%ecx\n");
+            printf("cltd\n");
+            printf("idivl %%ecx\n");
             eax = TRUE;
         }
         else if(!strcmp(operation, "loadAI")){
             printf("movl %s(%%%s), %s\n", args[1], args[0], eax == FALSE ? "%eax" : "%edx");
             eax = !eax;
         }
-        else if(!strcmp(operation, "cbr")){
-            printf("%s %s -> %s, %s\n", operation, args[0], args[1], args[2]);
+        else if(!strcmp(operation, "je")){
+            // printf("cmpl $0, %%eax\n");
+            printf("je .%s\n", args[1]);
+            eax = FALSE;
+        }
+        else if(!strcmp(operation, "jne")){
+            // printf("cmpl $0, %%eax\n");
+            printf("jne .%s\n", args[1]);
+            eax = FALSE;
+        }
+        else if(!strcmp(operation, "neg")){
+            printf("negl %s\n", eax == TRUE ? "%eax" : "%edx");
+        }
+        else if(!strcmp(operation, "return")){
+            if (eax == FALSE){
+                printf("movl %%edx, %%eax\n");
+            }
+            printf("popq %%rbp\n");
+            printf("ret\n");
+        }
+        else if(!strcmp(operation, "func")){
+            printf(".text\n");
+            printf(".globl %s\n", args[0]);
+            printf(".type %s, @function\n", args[0]);
+            printf("%s:\n", args[0]);
+            printf("pushq %%rbp\n");
+            printf("movq %%rsp, %%rbp\n");
+        }
+        else if(!strcmp(operation, "global")){
+            printf(".text\n");
+            printf(".globl %s\n", args[0]);
+            printf(".bss\n");
+            printf(".align 4\n");
+            printf(".type %s, @object\n", args[0]);
+            printf(".size %s, 4\n", args[0]);
+            printf("%s:\n", args[0]);
         }
     }
 }

@@ -24,21 +24,12 @@ struct table *new_table(){
     return table;
 }
 
-void update_table_entries(struct table *table){
-    for(int i = 0; i < table->num_entries; i++) {
-        struct entry *entry = table->entries[i];
-        sprintf(entry->shift, "%d", atoi(entry->shift) - SIZE_OF_INT);
-    }
-}
-
 void add_entry(struct table *table, struct entry *entry){
     if(table == NULL || entry == NULL) return;
-
-    sprintf(entry->shift, "%d", -SIZE_OF_INT);
-    update_table_entries(table);
+    table->num_entries++;
+    sprintf(entry->shift, "%d", -SIZE_OF_INT*table->num_entries);
     entry->scope = strdup(table->scope);
 
-    table->num_entries++;
     table->entries = realloc(table->entries, table->num_entries * sizeof(struct entry));
     table->entries[table->num_entries-1] = entry;
 }
