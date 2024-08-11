@@ -267,7 +267,7 @@ conditional : TK_PR_IF '(' expression ')'  command_block TK_PR_ELSE  command_blo
                                                                                    struct iloc_list *c5 = gen_code("jumpI", l3, NULL, NULL);
                                                                                    struct iloc_list *c6 = gen_code("label", l2, NULL, NULL);
                                                                                    struct iloc_list *c7 = gen_code("label", l3, NULL, NULL);
-                                                                                   $$->code = merge_code(10, $3->code, c1, c2, c3, c4, $5 != NULL ? $5->code : $5, c5, c6, $7 != NULL ? $7->code : $7, c7);
+                                                                                   $$->code = merge_code(10, $3->code, c1, c2, c3, c4, $5 != NULL ? $5->code : NULL, c5, c6, $7 != NULL ? $7->code : NULL, c7);
                                                                                     }
             | TK_PR_IF '(' expression ')'  command_block  { $$ = new_ast("if", BOOL);
                                                             add_child($$, $3); add_child($$, $5);
@@ -281,7 +281,7 @@ conditional : TK_PR_IF '(' expression ')'  command_block TK_PR_ELSE  command_blo
                                                             struct iloc_list *c4 = gen_code("label", l1, NULL, NULL); 
                                                             struct iloc_list *c5 = gen_code("jumpI", l2, NULL, NULL);
                                                             struct iloc_list *c6 = gen_code("label", l2, NULL, NULL); 
-                                                            $$->code = merge_code(8, $3->code, c1, c2, c3, c4, $5 != NULL ? $5->code : $5, c5, c6); };
+                                                            $$->code = merge_code(8, $3->code, c1, c2, c3, c4, $5 != NULL ? $5->code : NULL, c5, c6); };
 iteractive : TK_PR_WHILE '(' expression ')'  command_block    { $$ = new_ast("while", BOOL); 
                                                                 add_child($$, $3); add_child($$, $5);
                                                                 char *l1 = new_label();
@@ -296,7 +296,7 @@ iteractive : TK_PR_WHILE '(' expression ')'  command_block    { $$ = new_ast("wh
                                                                 struct iloc_list *c5 = gen_code("label", l2, NULL, NULL); 
                                                                 struct iloc_list *c6 = gen_code("jumpI", l1, NULL, NULL);
                                                                 struct iloc_list *c7 = gen_code("label", l3, NULL, NULL); 
-                                                                $$->code = merge_code(9, c1, $3->code, c2, c3, c4, c5, $5 != NULL ? $5->code : $5, c6, c7); };
+                                                                $$->code = merge_code(9, c1, $3->code, c2, c3, c4, c5, $5 != NULL ? $5->code : NULL, c6, c7); };
 /* FIM DEFINIÇÃO DE UM COMANDO (Item 3.4) */
 
 
