@@ -20,6 +20,7 @@ struct cfg_list {
 struct cfg *new_cfg(int line);
 void add_edge(struct cfg *node1, char *node2);
 void add_label(struct cfg *node, char* label, int line);
+void remove_edges(struct cfg *node);
 
 struct cfg_list *new_cfg_list();
 void add_cfg(struct cfg_list *cfg_list, struct cfg *node);

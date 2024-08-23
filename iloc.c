@@ -138,7 +138,7 @@ void generateAsm(struct iloc_list *iloc_list){
         else if(!strcmp(operation, "return")){
             printf("\tmovl %s, %%eax\n", register_names[index-1]);
             printf("\tpopq %%rbp\n");
-            printf("\tret\n\n");
+            printf("\tret\n");
         }
         else if(!strcmp(operation, "func")){
             printf("\t.text\n");

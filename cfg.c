@@ -86,6 +86,8 @@ void export_cfg(struct iloc_list *iloc_list){
         }
         else if(!strcmp(operation, "return")){
             line+=3;
+            remove_edges(cfg->nodes[cfg->num_nodes-1]);
+            jump_i = TRUE;
         }
         else if(!strcmp(operation, "func")){
             struct cfg *node = new_cfg(line);
@@ -172,4 +174,9 @@ void add_label(struct cfg *node, char* label, int line){
         node->labels[node->num_labels-1] = strdup(label);
         node->start_line = line;
     }
+}
+
+void remove_edges(struct cfg *node){
+    node->edges = NULL;
+    node->num_edges = 0;
 }
