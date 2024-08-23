@@ -1,4 +1,4 @@
-FILENAME=etapa5
+FILENAME=etapa6
 SCANNER=lex.yy.c
 PARSER=parser.tab.c parser.tab.h parser.output
 
@@ -33,6 +33,11 @@ $(FILENAME): $(OBJ)
 entrega: all clean
 	tar cvzf $(FILENAME).tgz -X .tarignore .
 
+test: all
+	./$(FILENAME) < tests/teste3.txt > o.s
+	$(CC) o.s -o programa
+	./programa
+
 .PHONY: clean
 
 clean:
@@ -41,3 +46,5 @@ clean:
 	rm -f $(FILENAME)
 	rm -f $(PARSER)
 	rm -f $(SCANNER)
+	rm -f o.s
+	rm -f programa

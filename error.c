@@ -6,7 +6,6 @@ enum error_types check_use(struct entry *entry, enum natures nature, int line, c
         error_message(ERR_UNDECLARED, label, nature, 0, line);
         return ERR_UNDECLARED;
     } 
-
     return check_nature(*entry, nature, line);
 }
 

@@ -5,3 +5,5 @@ lex.yy.c
 saida*
 bla*
 .vs*
+c.c
+c.s

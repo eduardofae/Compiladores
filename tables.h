@@ -11,7 +11,7 @@ struct entry {
     enum natures nature;
     enum types type;
     struct val value;
-    char shift[11];
+    char shift[12];
     char *scope;
 };
 
