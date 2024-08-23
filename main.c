@@ -7,8 +7,9 @@ void *arvore = NULL;
 
 int main (int argc, char **argv)
 {
-    int ret = yyparse(); 
-    exporta_code(arvore);
+    int ret = yyparse();
+    //exporta_code(arvore); 
+    exporta_cfg(arvore);
     free_ast(arvore);
     yylex_destroy();
     return ret;

@@ -1,0 +1,17 @@
+int c; c1; c2,
+
+() | int / main {
+    int b1,
+    int b2,
+    b1 = 10,
+    b2 = 10,
+    while(b1){
+        while(b2){
+            b2 = 0,
+        },
+        b1 = 0,
+    },
+    return b1,
+}
+
+int d,

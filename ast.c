@@ -75,3 +75,11 @@ void exporta_code(ast *tree)
         generateAsm(tree->code);
     }
 }
+
+void exporta_cfg(ast *tree)
+{
+    if(tree != NULL)
+    {
+        export_cfg(tree->code);
+    }
+}

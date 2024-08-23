@@ -1,4 +1,4 @@
-FILENAME=etapa6
+FILENAME=etapa7
 SCANNER=lex.yy.c
 PARSER=parser.tab.c parser.tab.h parser.output
 
@@ -12,7 +12,7 @@ LIBS=
 
 DEPS = $(PARSER) $(SCANNER)
 
-_OBJ = main.o lex.yy.o parser.tab.o ast.o types.o tables.o error.o lex_value.o iloc.o
+_OBJ = main.o lex.yy.o parser.tab.o ast.o types.o tables.o error.o lex_value.o iloc.o cfg.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS)

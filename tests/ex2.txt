@@ -23,11 +23,11 @@ int c; c1; c2,
     },
     if(b1){
     } else{
-        return 10,
+        b7 = 10,
     },
     if(b1){
     } else{
-        return 10,
+        b7 = 10,
     },
     b1 = 20,
     while (b1){

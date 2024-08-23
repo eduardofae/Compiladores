@@ -2,6 +2,7 @@
 #define _ARVORE_H_
 #include "types.h"
 #include "iloc.h"
+#include "cfg.h"
 
 typedef struct tree {
   char *label;
@@ -33,5 +34,8 @@ void exporta_ast(ast *tree);
 
 // Printa formatado o código assembly de acordo com a estrutura iloc_list presente em ast
 void exporta_code(ast *tree);
+
+// Printa em dot o cfg
+void exporta_cfg(ast *tree);
 
 #endif //_ARVORE_H_
